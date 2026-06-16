@@ -1,22 +1,32 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: AppGrowth Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: apps
+    description: App management
+  - name: reviews
+    description: Ratings and reviews
+  - name: campaigns
+    description: User acquisition campaigns
+  - name: aso
+    description: App Store Optimization
+  - name: notifications
+    description: Push notifications and stories
+  - name: dashboard
+    description: Dashboard stats and recommendations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +34,381 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /apps:
+    get:
+      operationId: listApps
+      tags: [apps]
+      summary: List all apps
+      responses:
+        "200":
+          description: List of apps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/App"
+    post:
+      operationId: createApp
+      tags: [apps]
+      summary: Register a new app
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/App"
+
+  /apps/{appId}:
+    get:
+      operationId: getApp
+      tags: [apps]
+      summary: Get app by ID
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: App
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/App"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateApp
+      tags: [apps]
+      summary: Update app
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/App"
+    delete:
+      operationId: deleteApp
+      tags: [apps]
+      summary: Delete app
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /apps/{appId}/reviews:
+    get:
+      operationId: listReviews
+      tags: [reviews]
+      summary: List reviews for an app
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+
+  /apps/{appId}/reviews/{reviewId}/reply:
+    patch:
+      operationId: replyToReview
+      tags: [reviews]
+      summary: Reply to a review
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewReply"
+      responses:
+        "200":
+          description: Updated review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+
+  /campaigns:
+    get:
+      operationId: listCampaigns
+      tags: [campaigns]
+      summary: List campaigns
+      parameters:
+        - name: appId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of campaigns
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Campaign"
+    post:
+      operationId: createCampaign
+      tags: [campaigns]
+      summary: Create a campaign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CampaignInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+
+  /campaigns/{campaignId}:
+    get:
+      operationId: getCampaign
+      tags: [campaigns]
+      summary: Get campaign by ID
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Campaign
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+    patch:
+      operationId: updateCampaign
+      tags: [campaigns]
+      summary: Update campaign status or budget
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CampaignUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+
+  /aso-keywords:
+    get:
+      operationId: listAsoKeywords
+      tags: [aso]
+      summary: List ASO keywords
+      parameters:
+        - name: appId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of keywords
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AsoKeyword"
+    post:
+      operationId: createAsoKeyword
+      tags: [aso]
+      summary: Add an ASO keyword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AsoKeywordInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AsoKeyword"
+
+  /aso-keywords/{keywordId}:
+    delete:
+      operationId: deleteAsoKeyword
+      tags: [aso]
+      summary: Remove an ASO keyword
+      parameters:
+        - name: keywordId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List push notifications
+      parameters:
+        - name: appId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+    post:
+      operationId: createNotification
+      tags: [notifications]
+      summary: Create a push notification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  /notifications/{notificationId}:
+    patch:
+      operationId: updateNotification
+      tags: [notifications]
+      summary: Update or send a notification
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get overall dashboard stats
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/recommendations:
+    get:
+      operationId: getRecommendations
+      tags: [dashboard]
+      summary: Get service recommendations based on app stage
+      parameters:
+        - name: appId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Recommendations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Recommendation"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +419,282 @@ components:
       required:
         - status
 
+    App:
+      type: object
+      required: [id, name, platform, totalDownloads, rating, reviewCount, category, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        platform:
+          type: string
+          enum: [ios, android, both]
+        bundleId:
+          type: ["string", "null"]
+        iconUrl:
+          type: ["string", "null"]
+        category:
+          type: string
+        totalDownloads:
+          type: integer
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+        monthlyActiveUsers:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+
+    AppInput:
+      type: object
+      required: [name, platform, category]
+      properties:
+        name:
+          type: string
+        platform:
+          type: string
+          enum: [ios, android, both]
+        bundleId:
+          type: string
+        category:
+          type: string
+        totalDownloads:
+          type: integer
+        monthlyActiveUsers:
+          type: integer
+
+    AppUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        totalDownloads:
+          type: integer
+        monthlyActiveUsers:
+          type: integer
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+
+    Review:
+      type: object
+      required: [id, appId, author, rating, body, date, sentiment, replied]
+      properties:
+        id:
+          type: integer
+        appId:
+          type: integer
+        author:
+          type: string
+        rating:
+          type: integer
+        body:
+          type: string
+        date:
+          type: string
+        sentiment:
+          type: string
+          enum: [positive, neutral, negative]
+        replied:
+          type: boolean
+        replyText:
+          type: ["string", "null"]
+
+    ReviewReply:
+      type: object
+      required: [replyText]
+      properties:
+        replyText:
+          type: string
+
+    Campaign:
+      type: object
+      required: [id, appId, name, type, status, budget, spend, impressions, clicks, installs, createdAt]
+      properties:
+        id:
+          type: integer
+        appId:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [meta_ads, google_ads, apple_search_ads, organic]
+        status:
+          type: string
+          enum: [active, paused, completed, draft]
+        budget:
+          type: number
+        spend:
+          type: number
+        impressions:
+          type: integer
+        clicks:
+          type: integer
+        installs:
+          type: integer
+        ctr:
+          type: number
+        cpi:
+          type: number
+        createdAt:
+          type: string
+
+    CampaignInput:
+      type: object
+      required: [appId, name, type, budget]
+      properties:
+        appId:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [meta_ads, google_ads, apple_search_ads, organic]
+        budget:
+          type: number
+
+    CampaignUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [active, paused, completed, draft]
+        budget:
+          type: number
+
+    AsoKeyword:
+      type: object
+      required: [id, appId, keyword, rank, volume, difficulty, createdAt]
+      properties:
+        id:
+          type: integer
+        appId:
+          type: integer
+        keyword:
+          type: string
+        rank:
+          type: ["integer", "null"]
+        volume:
+          type: integer
+        difficulty:
+          type: integer
+        traffic:
+          type: integer
+        createdAt:
+          type: string
+
+    AsoKeywordInput:
+      type: object
+      required: [appId, keyword]
+      properties:
+        appId:
+          type: integer
+        keyword:
+          type: string
+        volume:
+          type: integer
+        difficulty:
+          type: integer
+
+    Notification:
+      type: object
+      required: [id, appId, title, body, status, createdAt]
+      properties:
+        id:
+          type: integer
+        appId:
+          type: integer
+        title:
+          type: string
+        body:
+          type: string
+        status:
+          type: string
+          enum: [draft, scheduled, sent]
+        scheduledAt:
+          type: ["string", "null"]
+        sentAt:
+          type: ["string", "null"]
+        deliveredCount:
+          type: ["integer", "null"]
+        openCount:
+          type: ["integer", "null"]
+        openRate:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+
+    NotificationInput:
+      type: object
+      required: [appId, title, body]
+      properties:
+        appId:
+          type: integer
+        title:
+          type: string
+        body:
+          type: string
+        scheduledAt:
+          type: string
+
+    NotificationUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+        status:
+          type: string
+          enum: [draft, scheduled, sent]
+        scheduledAt:
+          type: string
+
+    DashboardStats:
+      type: object
+      required: [totalApps, totalDownloads, avgRating, totalReviews, activeCampaigns, totalSpend, totalInstallsFromCampaigns]
+      properties:
+        totalApps:
+          type: integer
+        totalDownloads:
+          type: integer
+        avgRating:
+          type: number
+        totalReviews:
+          type: integer
+        activeCampaigns:
+          type: integer
+        totalSpend:
+          type: number
+        totalInstallsFromCampaigns:
+          type: integer
+        unrepliedReviews:
+          type: integer
+        topApp:
+          $ref: "#/components/schemas/App"
+
+    Recommendation:
+      type: object
+      required: [id, service, title, description, priority, stage]
+      properties:
+        id:
+          type: string
+        service:
+          type: string
+          enum: [ratings_reviews, user_acquisition, meta_ads, aso, push_notifications]
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+          enum: [high, medium, low]
+        stage:
+          type: string
+          enum: [launch, growth, scale]
+        ctaLabel:
+          type: string
