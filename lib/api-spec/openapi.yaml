@@ -35,6 +35,31 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
 
+  /apps/search:
+    get:
+      operationId: searchApps
+      tags: [apps]
+      summary: Search apps via ASO (mock)
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: platform
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AppSearchResult"
+
   /apps:
     get:
       operationId: listApps
@@ -376,6 +401,108 @@ paths:
               schema:
                 $ref: "#/components/schemas/Notification"
 
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [orders]
+      summary: List all orders
+      parameters:
+        - name: appId
+          in: query
+          schema:
+            type: integer
+        - name: serviceType
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Create a new order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+  /orders/{orderId}:
+    get:
+      operationId: getOrder
+      tags: [orders]
+      summary: Get order by ID
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateOrder
+      tags: [orders]
+      summary: Update order status or details
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+    delete:
+      operationId: deleteOrder
+      tags: [orders]
+      summary: Delete an order
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
   /dashboard/stats:
     get:
       operationId: getDashboardStats
@@ -676,6 +803,98 @@ components:
           type: integer
         topApp:
           $ref: "#/components/schemas/App"
+
+    AppSearchResult:
+      type: object
+      required: [id, name, platform, category, developer, rating]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        platform:
+          type: string
+          enum: [ios, android, both]
+        bundleId:
+          type: ["string", "null"]
+        iconUrl:
+          type: ["string", "null"]
+        category:
+          type: string
+        developer:
+          type: string
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+        totalDownloads:
+          type: integer
+
+    Order:
+      type: object
+      required: [id, appId, serviceType, status, amount, createdAt]
+      properties:
+        id:
+          type: integer
+        appId:
+          type: integer
+        serviceType:
+          type: string
+          enum: [ratings, aso_installs, ai_ugc_video, non_ai_ugc_video, push_notifications, meta_ads, apple_search_ads]
+        status:
+          type: string
+          enum: [pending, in_progress, completed, cancelled]
+        country:
+          type: ["string", "null"]
+        quantity:
+          type: ["integer", "null"]
+        amount:
+          type: number
+        keywords:
+          type: ["string", "null"]
+        videoType:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    OrderInput:
+      type: object
+      required: [appId, serviceType, amount]
+      properties:
+        appId:
+          type: integer
+        serviceType:
+          type: string
+          enum: [ratings, aso_installs, ai_ugc_video, non_ai_ugc_video, push_notifications, meta_ads, apple_search_ads]
+        country:
+          type: string
+        quantity:
+          type: integer
+        amount:
+          type: number
+        keywords:
+          type: string
+        videoType:
+          type: string
+        notes:
+          type: string
+
+    OrderUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, in_progress, completed, cancelled]
+        notes:
+          type: string
+        quantity:
+          type: integer
+        country:
+          type: string
 
     Recommendation:
       type: object

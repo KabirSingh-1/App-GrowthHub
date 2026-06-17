@@ -9,11 +9,14 @@ import Dashboard from "@/pages/dashboard";
 import AppsList from "@/pages/apps/index";
 import AppDetail from "@/pages/apps/detail";
 import Ratings from "@/pages/ratings";
-import Acquisition from "@/pages/acquisition";
-import AdsCreative from "@/pages/ads";
 import Aso from "@/pages/aso";
 import Notifications from "@/pages/notifications";
 import Settings from "@/pages/settings";
+import OrderRatings from "@/pages/order/ratings";
+import OrderAsoInstalls from "@/pages/order/aso-installs";
+import OrderVideos from "@/pages/order/videos";
+import Orders from "@/pages/orders";
+import Marketing from "@/pages/marketing";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,11 +35,14 @@ function Router() {
       <Route path="/apps" component={AppsList} />
       <Route path="/apps/:id" component={AppDetail} />
       <Route path="/ratings" component={Ratings} />
-      <Route path="/acquisition" component={Acquisition} />
-      <Route path="/ads" component={AdsCreative} />
       <Route path="/aso" component={Aso} />
       <Route path="/notifications" component={Notifications} />
       <Route path="/settings" component={Settings} />
+      <Route path="/order/ratings" component={OrderRatings} />
+      <Route path="/order/aso-installs" component={OrderAsoInstalls} />
+      <Route path="/order/videos" component={OrderVideos} />
+      <Route path="/orders" component={Orders} />
+      <Route path="/marketing" component={Marketing} />
       <Route component={NotFound} />
     </Switch>
   );

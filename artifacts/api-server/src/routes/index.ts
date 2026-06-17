@@ -1,20 +1,24 @@
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
+import searchRouter from "./search";
 import appsRouter from "./apps";
 import reviewsRouter from "./reviews";
 import campaignsRouter from "./campaigns";
 import asoRouter from "./aso";
 import notificationsRouter from "./notifications";
 import dashboardRouter from "./dashboard";
+import ordersRouter from "./orders";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(searchRouter);
 router.use(appsRouter);
 router.use(reviewsRouter);
 router.use(campaignsRouter);
 router.use(asoRouter);
 router.use(notificationsRouter);
 router.use(dashboardRouter);
+router.use(ordersRouter);
 
 export default router;

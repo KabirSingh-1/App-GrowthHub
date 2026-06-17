@@ -237,6 +237,114 @@ export interface DashboardStats {
   topApp?: App;
 }
 
+export type AppSearchResultPlatform = typeof AppSearchResultPlatform[keyof typeof AppSearchResultPlatform];
+
+
+export const AppSearchResultPlatform = {
+  ios: 'ios',
+  android: 'android',
+  both: 'both',
+} as const;
+
+export interface AppSearchResult {
+  id: string;
+  name: string;
+  platform: AppSearchResultPlatform;
+  /** @nullable */
+  bundleId?: string | null;
+  /** @nullable */
+  iconUrl?: string | null;
+  category: string;
+  developer: string;
+  rating: number;
+  reviewCount?: number;
+  totalDownloads?: number;
+}
+
+export type OrderServiceType = typeof OrderServiceType[keyof typeof OrderServiceType];
+
+
+export const OrderServiceType = {
+  ratings: 'ratings',
+  aso_installs: 'aso_installs',
+  ai_ugc_video: 'ai_ugc_video',
+  non_ai_ugc_video: 'non_ai_ugc_video',
+  push_notifications: 'push_notifications',
+  meta_ads: 'meta_ads',
+  apple_search_ads: 'apple_search_ads',
+} as const;
+
+export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
+
+
+export const OrderStatus = {
+  pending: 'pending',
+  in_progress: 'in_progress',
+  completed: 'completed',
+  cancelled: 'cancelled',
+} as const;
+
+export interface Order {
+  id: number;
+  appId: number;
+  serviceType: OrderServiceType;
+  status: OrderStatus;
+  /** @nullable */
+  country?: string | null;
+  /** @nullable */
+  quantity?: number | null;
+  amount: number;
+  /** @nullable */
+  keywords?: string | null;
+  /** @nullable */
+  videoType?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export type OrderInputServiceType = typeof OrderInputServiceType[keyof typeof OrderInputServiceType];
+
+
+export const OrderInputServiceType = {
+  ratings: 'ratings',
+  aso_installs: 'aso_installs',
+  ai_ugc_video: 'ai_ugc_video',
+  non_ai_ugc_video: 'non_ai_ugc_video',
+  push_notifications: 'push_notifications',
+  meta_ads: 'meta_ads',
+  apple_search_ads: 'apple_search_ads',
+} as const;
+
+export interface OrderInput {
+  appId: number;
+  serviceType: OrderInputServiceType;
+  country?: string;
+  quantity?: number;
+  amount: number;
+  keywords?: string;
+  videoType?: string;
+  notes?: string;
+}
+
+export type OrderUpdateStatus = typeof OrderUpdateStatus[keyof typeof OrderUpdateStatus];
+
+
+export const OrderUpdateStatus = {
+  pending: 'pending',
+  in_progress: 'in_progress',
+  completed: 'completed',
+  cancelled: 'cancelled',
+} as const;
+
+export interface OrderUpdate {
+  status?: OrderUpdateStatus;
+  notes?: string;
+  quantity?: number;
+  country?: string;
+}
+
 export type RecommendationService = typeof RecommendationService[keyof typeof RecommendationService];
 
 
@@ -276,6 +384,11 @@ export interface Recommendation {
   ctaLabel?: string;
 }
 
+export type SearchAppsParams = {
+q: string;
+platform?: string;
+};
+
 export type ListCampaignsParams = {
 appId?: number;
 status?: string;
@@ -287,6 +400,12 @@ appId?: number;
 
 export type ListNotificationsParams = {
 appId?: number;
+status?: string;
+};
+
+export type ListOrdersParams = {
+appId?: number;
+serviceType?: string;
 status?: string;
 };
 

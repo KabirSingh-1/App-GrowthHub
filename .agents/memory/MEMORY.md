@@ -1,0 +1,1 @@
+- [AppVersal architecture](appversal-arch.md) — key patterns, constraints, and decisions for this project

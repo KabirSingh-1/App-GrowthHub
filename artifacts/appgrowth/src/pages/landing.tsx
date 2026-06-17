@@ -7,10 +7,10 @@ export default function Landing() {
       <header className="fixed top-0 w-full bg-background/80 backdrop-blur-md z-50 border-b border-border">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl">
-              AG
+            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-black text-sm tracking-tight">
+              AV
             </div>
-            <span className="font-bold text-xl tracking-tight text-foreground">AppGrowth</span>
+            <span className="font-black text-xl tracking-tight text-foreground">AppVersal</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/dashboard">

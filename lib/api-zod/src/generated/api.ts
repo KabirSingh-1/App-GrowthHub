@@ -17,6 +17,29 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
+ * @summary Search apps via ASO (mock)
+ */
+export const SearchAppsQueryParams = zod.object({
+  "q": zod.coerce.string(),
+  "platform": zod.coerce.string().optional()
+})
+
+export const SearchAppsResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "platform": zod.enum(['ios', 'android', 'both']),
+  "bundleId": zod.string().nullish(),
+  "iconUrl": zod.string().nullish(),
+  "category": zod.string(),
+  "developer": zod.string(),
+  "rating": zod.number(),
+  "reviewCount": zod.number().optional(),
+  "totalDownloads": zod.number().optional()
+})
+export const SearchAppsResponse = zod.array(SearchAppsResponseItem)
+
+
+/**
  * @summary List all apps
  */
 export const ListAppsResponseItem = zod.object({
@@ -344,6 +367,108 @@ export const UpdateNotificationResponse = zod.object({
   "openCount": zod.number().nullish(),
   "openRate": zod.number().nullish(),
   "createdAt": zod.string()
+})
+
+
+/**
+ * @summary List all orders
+ */
+export const ListOrdersQueryParams = zod.object({
+  "appId": zod.coerce.number().optional(),
+  "serviceType": zod.coerce.string().optional(),
+  "status": zod.coerce.string().optional()
+})
+
+export const ListOrdersResponseItem = zod.object({
+  "id": zod.number(),
+  "appId": zod.number(),
+  "serviceType": zod.enum(['ratings', 'aso_installs', 'ai_ugc_video', 'non_ai_ugc_video', 'push_notifications', 'meta_ads', 'apple_search_ads']),
+  "status": zod.enum(['pending', 'in_progress', 'completed', 'cancelled']),
+  "country": zod.string().nullish(),
+  "quantity": zod.number().nullish(),
+  "amount": zod.number(),
+  "keywords": zod.string().nullish(),
+  "videoType": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().optional()
+})
+export const ListOrdersResponse = zod.array(ListOrdersResponseItem)
+
+
+/**
+ * @summary Create a new order
+ */
+export const CreateOrderBody = zod.object({
+  "appId": zod.number(),
+  "serviceType": zod.enum(['ratings', 'aso_installs', 'ai_ugc_video', 'non_ai_ugc_video', 'push_notifications', 'meta_ads', 'apple_search_ads']),
+  "country": zod.string().optional(),
+  "quantity": zod.number().optional(),
+  "amount": zod.number(),
+  "keywords": zod.string().optional(),
+  "videoType": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Get order by ID
+ */
+export const GetOrderParams = zod.object({
+  "orderId": zod.coerce.number()
+})
+
+export const GetOrderResponse = zod.object({
+  "id": zod.number(),
+  "appId": zod.number(),
+  "serviceType": zod.enum(['ratings', 'aso_installs', 'ai_ugc_video', 'non_ai_ugc_video', 'push_notifications', 'meta_ads', 'apple_search_ads']),
+  "status": zod.enum(['pending', 'in_progress', 'completed', 'cancelled']),
+  "country": zod.string().nullish(),
+  "quantity": zod.number().nullish(),
+  "amount": zod.number(),
+  "keywords": zod.string().nullish(),
+  "videoType": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().optional()
+})
+
+
+/**
+ * @summary Update order status or details
+ */
+export const UpdateOrderParams = zod.object({
+  "orderId": zod.coerce.number()
+})
+
+export const UpdateOrderBody = zod.object({
+  "status": zod.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
+  "notes": zod.string().optional(),
+  "quantity": zod.number().optional(),
+  "country": zod.string().optional()
+})
+
+export const UpdateOrderResponse = zod.object({
+  "id": zod.number(),
+  "appId": zod.number(),
+  "serviceType": zod.enum(['ratings', 'aso_installs', 'ai_ugc_video', 'non_ai_ugc_video', 'push_notifications', 'meta_ads', 'apple_search_ads']),
+  "status": zod.enum(['pending', 'in_progress', 'completed', 'cancelled']),
+  "country": zod.string().nullish(),
+  "quantity": zod.number().nullish(),
+  "amount": zod.number(),
+  "keywords": zod.string().nullish(),
+  "videoType": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().optional()
+})
+
+
+/**
+ * @summary Delete an order
+ */
+export const DeleteOrderParams = zod.object({
+  "orderId": zod.coerce.number()
 })
 
 

@@ -2,7 +2,7 @@ import { AppLayout } from "@/components/layout/app-layout";
 import { useListNotifications } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Plus, Send, Clock, Edit2 } from "lucide-react";
+import { Plus, Send, Clock, Edit2, Zap, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function Notifications() {
@@ -19,6 +19,24 @@ export default function Notifications() {
           <Button className="rounded-xl font-bold shadow-sm hover-elevate">
             <Plus className="mr-2 h-5 w-5" /> New Message
           </Button>
+        </div>
+
+        <div className="rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 p-6 flex items-center justify-between gap-4 overflow-hidden relative">
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 80% 50%, white 0%, transparent 60%)" }} />
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+              <Zap className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <p className="font-black text-white text-lg leading-tight">Powered by AppStorys</p>
+              <p className="text-white/80 font-medium text-sm">AI-personalized in-app stories, push campaigns, and real-time segmentation — all in one platform.</p>
+            </div>
+          </div>
+          <a href="https://appstorys.com" target="_blank" rel="noreferrer" className="relative z-10 flex-shrink-0">
+            <Button variant="secondary" className="rounded-xl font-bold gap-2 bg-white text-violet-700 hover:bg-white/90">
+              Learn more <ArrowRight className="h-4 w-4" />
+            </Button>
+          </a>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
