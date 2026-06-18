@@ -66,7 +66,7 @@ export default function AppDetail() {
             <StatsCard icon={Download} title="Downloads" value={app.totalDownloads.toLocaleString()} />
             <StatsCard icon={Star} title="Rating" value={app.rating.toFixed(1)} subtitle={`${app.reviewCount} reviews`} />
             <StatsCard icon={Users} title="Active Users" value={app.monthlyActiveUsers ? app.monthlyActiveUsers.toLocaleString() : "N/A"} />
-            <StatsCard icon={TrendingUp} title="Growth" value="+12%" subtitle="This month" color="text-accent" />
+            <StatsCard icon={TrendingUp} title="Growth" value="+12%" subtitle="This month" color="text-emerald-500" />
           </div>
         )}
 

@@ -109,7 +109,7 @@
   --muted: 270 10% 94%;
   --muted-foreground: 270 20% 40%;
 
-  --accent: 150 80% 45%; /* Bright Mint */
+  --accent: 270 10% 92%;
   --accent-foreground: 270 50% 10%;
 
   --destructive: 0 80% 60%;
@@ -188,8 +188,8 @@
   --muted: 270 30% 20%;
   --muted-foreground: 270 20% 70%;
 
-  --accent: 150 80% 45%;
-  --accent-foreground: 270 50% 10%;
+  --accent: 270 30% 25%;
+  --accent-foreground: 45 30% 97%;
 
   --destructive: 0 80% 60%;
   --destructive-foreground: 0 0% 100%;

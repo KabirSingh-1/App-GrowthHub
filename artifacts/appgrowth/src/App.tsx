@@ -18,6 +18,7 @@ import OrderVideos from "@/pages/order/videos";
 import Orders from "@/pages/orders";
 import Marketing from "@/pages/marketing";
 import SearchResults from "@/pages/search";
+import Payment from "@/pages/payment";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/orders" component={Orders} />
       <Route path="/marketing" component={Marketing} />
       <Route path="/search" component={SearchResults} />
+      <Route path="/payment" component={Payment} />
       <Route component={NotFound} />
     </Switch>
   );

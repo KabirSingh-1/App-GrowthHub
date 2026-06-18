@@ -63,13 +63,13 @@ export default function Aso() {
                           <span className={`font-black text-lg ${kw.rank && kw.rank <= 10 ? 'text-primary' : 'text-foreground'}`}>
                             {kw.rank || '-'}
                           </span>
-                          {i % 3 === 0 ? <ArrowUpRight className="h-4 w-4 text-accent" /> : i % 3 === 1 ? <ArrowDownRight className="h-4 w-4 text-destructive" /> : <Minus className="h-4 w-4 text-muted-foreground" />}
+                          {i % 3 === 0 ? <ArrowUpRight className="h-4 w-4 text-emerald-500" /> : i % 3 === 1 ? <ArrowDownRight className="h-4 w-4 text-destructive" /> : <Minus className="h-4 w-4 text-muted-foreground" />}
                         </div>
                       </td>
                       <td className="p-4 text-right font-bold">{kw.volume.toLocaleString()}</td>
                       <td className="p-4 text-center">
                         <div className="w-16 h-2 bg-muted rounded-full mx-auto overflow-hidden">
-                          <div className={`h-full ${kw.difficulty > 70 ? 'bg-destructive' : kw.difficulty > 40 ? 'bg-secondary' : 'bg-accent'}`} style={{ width: `${kw.difficulty}%` }} />
+                          <div className={`h-full ${kw.difficulty > 70 ? 'bg-destructive' : kw.difficulty > 40 ? 'bg-secondary' : 'bg-emerald-500'}`} style={{ width: `${kw.difficulty}%` }} />
                         </div>
                         <span className="text-xs text-muted-foreground mt-1 block">{kw.difficulty}/100</span>
                       </td>
