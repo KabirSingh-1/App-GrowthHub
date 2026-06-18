@@ -47,7 +47,7 @@ export default function Notifications() {
               <div key={notif.id} className="bg-card rounded-3xl p-6 border border-border/50 shadow-sm hover-elevate transition-all group flex flex-col h-full">
                 <div className="flex justify-between items-start mb-4">
                   <Badge variant="outline" className={`rounded-lg border-0 px-3 py-1 font-bold ${
-                    notif.status === 'sent' ? 'bg-accent/20 text-accent' : 
+                    notif.status === 'sent' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 
                     notif.status === 'scheduled' ? 'bg-secondary/20 text-secondary' : 
                     'bg-muted text-muted-foreground'
                   }`}>

@@ -86,7 +86,7 @@ export default function Acquisition() {
                     <tr key={camp.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors font-medium">
                       <td className="p-4 font-bold text-foreground">{camp.name}</td>
                       <td className="p-4">
-                        <Badge variant="outline" className={`rounded-lg border-0 ${camp.status === 'active' ? 'bg-accent/20 text-accent' : 'bg-muted text-muted-foreground'}`}>
+                        <Badge variant="outline" className={`rounded-lg border-0 ${camp.status === 'active' ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
                           {camp.status}
                         </Badge>
                       </td>

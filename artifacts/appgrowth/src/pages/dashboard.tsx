@@ -82,7 +82,7 @@ function getPriorityColor(priority: string) {
   switch (priority) {
     case 'high': return 'bg-primary';
     case 'medium': return 'bg-secondary';
-    case 'low': return 'bg-accent';
+    case 'low': return 'bg-emerald-500';
     default: return 'bg-muted';
   }
 }
