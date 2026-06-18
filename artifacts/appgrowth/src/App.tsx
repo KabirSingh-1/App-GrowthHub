@@ -17,6 +17,7 @@ import OrderAsoInstalls from "@/pages/order/aso-installs";
 import OrderVideos from "@/pages/order/videos";
 import Orders from "@/pages/orders";
 import Marketing from "@/pages/marketing";
+import SearchResults from "@/pages/search";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,6 +44,7 @@ function Router() {
       <Route path="/order/videos" component={OrderVideos} />
       <Route path="/orders" component={Orders} />
       <Route path="/marketing" component={Marketing} />
+      <Route path="/search" component={SearchResults} />
       <Route component={NotFound} />
     </Switch>
   );

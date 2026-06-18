@@ -8,6 +8,7 @@ import asoRouter from "./aso";
 import notificationsRouter from "./notifications";
 import dashboardRouter from "./dashboard";
 import ordersRouter from "./orders";
+import playstoreRouter from "./playstore";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(asoRouter);
 router.use(notificationsRouter);
 router.use(dashboardRouter);
 router.use(ordersRouter);
+router.use(playstoreRouter);
 
 export default router;
