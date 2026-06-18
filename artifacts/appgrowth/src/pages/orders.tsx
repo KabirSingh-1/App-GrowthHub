@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/layout/app-layout";
-import { useListOrders, useListApps, useCreateOrder, useDeleteOrder } from "@workspace/api-client-react";
+import { useListOrders, useListApps, useCreateOrder, useDeleteOrder } from "@/lib/mock-api";
 import { useQueryClient } from "@tanstack/react-query";
-import { getListOrdersQueryKey } from "@workspace/api-client-react";
+import { getListOrdersQueryKey } from "@/lib/mock-api";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { SERVICE_LABELS, STATUS_COLORS } from "@/constants";
@@ -46,13 +46,13 @@ export default function Orders() {
     },
   });
 
-  const appName = (appId: number) => apps?.find(a => a.id === appId)?.name ?? `App #${appId}`;
+  const appName = (appId: number) => (Array.isArray(apps) ? apps.find(a => a.id === appId) : undefined)?.name ?? `App #${appId}`;
 
   const filtered = orders?.filter(o =>
     activeTab === "all" ? true : o.status === activeTab
   ) ?? [];
 
-  const detailOrder = orders?.find(o => o.id === selectedOrder);
+  const detailOrder = Array.isArray(orders) ? orders.find(o => o.id === selectedOrder) : undefined;
 
   return (
     <AppLayout>

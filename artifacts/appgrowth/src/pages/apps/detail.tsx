@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/layout/app-layout";
-import { useGetApp, useListReviews, useListAsoKeywords } from "@workspace/api-client-react";
+import { useGetApp, useListReviews, useListAsoKeywords } from "@/lib/mock-api";
 import { useParams } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -81,7 +81,7 @@ export default function AppDetail() {
                 <div className="space-y-4">
                   {[1, 2].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
                 </div>
-              ) : reviews && reviews.length > 0 ? (
+              ) : Array.isArray(reviews) && reviews.length > 0 ? (
                 <div className="space-y-4">
                   {reviews.slice(0, 3).map(review => (
                     <div key={review.id} className="bg-muted/30 p-4 rounded-xl border border-border/50">
@@ -113,7 +113,7 @@ export default function AppDetail() {
                 <div className="space-y-3">
                   {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 rounded-xl" />)}
                 </div>
-              ) : asoKeywords && asoKeywords.length > 0 ? (
+              ) : Array.isArray(asoKeywords) && asoKeywords.length > 0 ? (
                 <div className="space-y-3">
                   {asoKeywords.slice(0, 5).map(kw => (
                     <div key={kw.id} className="flex items-center justify-between bg-muted/30 p-3 rounded-xl border border-border/50">

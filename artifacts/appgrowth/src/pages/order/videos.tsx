@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/layout/app-layout";
-import { useListApps, useCreateOrder } from "@workspace/api-client-react";
+import { useListApps, useCreateOrder } from "@/lib/mock-api";
 import { Button } from "@/components/ui/button";
 import { AI_VIDEO_PRICE, NON_AI_VIDEO_PRICE } from "@/constants";
 import { cn } from "@/lib/utils";

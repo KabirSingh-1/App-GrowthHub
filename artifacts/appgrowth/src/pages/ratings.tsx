@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/layout/app-layout";
-import { useListApps, useListReviews, useReplyToReview } from "@workspace/api-client-react";
+import { useListApps, useListReviews, useReplyToReview } from "@/lib/mock-api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Star, MessageCircle, CheckCircle } from "lucide-react";
@@ -29,7 +29,7 @@ export default function Ratings() {
                 <Skeleton className="h-12 rounded-xl" />
                 <Skeleton className="h-12 rounded-xl" />
               </div>
-            ) : apps && apps.length > 0 ? (
+            ) : Array.isArray(apps) && apps.length > 0 ? (
               <div className="space-y-2">
                 {apps.map(app => (
                   <div key={app.id} className={`p-3 rounded-xl cursor-pointer font-bold transition-all ${app.id === firstAppId ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-card text-foreground border border-border hover:bg-muted'}`}>
@@ -56,7 +56,7 @@ export default function Ratings() {
               <div className="space-y-4">
                 {[1, 2, 3].map(i => <Skeleton key={i} className="h-40 rounded-2xl" />)}
               </div>
-            ) : reviews && reviews.length > 0 ? (
+            ) : Array.isArray(reviews) && reviews.length > 0 ? (
               <div className="space-y-4">
                 {reviews.map(review => (
                   <ReviewCard key={review.id} review={review} appId={firstAppId!} onReply={() => refetch()} />

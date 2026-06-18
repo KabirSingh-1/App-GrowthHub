@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/layout/app-layout";
-import { useListNotifications } from "@workspace/api-client-react";
+import { useListNotifications } from "@/lib/mock-api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Plus, Send, Clock, Edit2, Zap, ArrowRight } from "lucide-react";
@@ -42,7 +42,7 @@ export default function Notifications() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {isLoading ? (
             [1, 2, 3].map(i => <Skeleton key={i} className="h-48 rounded-3xl" />)
-          ) : notifications && notifications.length > 0 ? (
+          ) : Array.isArray(notifications) && notifications.length > 0 ? (
             notifications.map(notif => (
               <div key={notif.id} className="bg-card rounded-3xl p-6 border border-border/50 shadow-sm hover-elevate transition-all group flex flex-col h-full">
                 <div className="flex justify-between items-start mb-4">

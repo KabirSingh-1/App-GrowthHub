@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/layout/app-layout";
-import { useListApps } from "@workspace/api-client-react";
+import { useListApps } from "@/lib/mock-api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,7 @@ export default function AppsList() {
               <Skeleton key={i} className="h-64 rounded-2xl" />
             ))}
           </div>
-        ) : apps && apps.length > 0 ? (
+        ) : Array.isArray(apps) && apps.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {apps.map(app => (
               <Link key={app.id} href={`/apps/${app.id}`}>
