@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "dev": "PORT=8080 BASE_PATH=/ npm run dev --workspace=@workspace/appgrowth & PORT=8081 BASE_PATH=/ npm run dev --workspace=@workspace/mockup-sandbox & wait",
+    "dev": "PORT=5001 DATABASE_URL=postgres://localhost:5432/appgrowth npm run dev --workspace=@workspace/api-server & PORT=8080 BASE_PATH=/ npm run dev --workspace=@workspace/appgrowth & PORT=8081 BASE_PATH=/ npm run dev --workspace=@workspace/mockup-sandbox & wait",
     "build": "npm run typecheck && npm run build --workspaces --if-present",
     "typecheck:libs": "tsc --build",
     "typecheck": "npm run typecheck:libs && npm run typecheck --workspaces --if-present"
