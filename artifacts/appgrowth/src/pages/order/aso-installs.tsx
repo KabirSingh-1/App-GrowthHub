@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/layout/app-layout";
-import { useListApps, useCreateOrder } from "@workspace/api-client-react";
+import { useListApps, useCreateOrder } from "@/lib/mock-api";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { COUNTRIES, ASO_INSTALL_PRICE, ASO_INSTALL_QUANTITIES } from "@/constants";
@@ -47,7 +47,7 @@ export default function OrderAsoInstalls() {
   });
 
   const total = (installs * keywords.length * ASO_INSTALL_PRICE).toFixed(2);
-  const selectedApp = apps?.find(a => a.id === appId);
+  const selectedApp = Array.isArray(apps) ? apps.find(a => a.id === appId) : undefined;
 
   const addKeyword = () => {
     const kw = kwInput.trim();

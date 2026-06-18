@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/layout/app-layout";
-import { useListApps, useCreateOrder } from "@workspace/api-client-react";
+import { useListApps, useCreateOrder } from "@/lib/mock-api";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { COUNTRIES, RATING_PRICE, RATING_QUANTITIES } from "@/constants";
@@ -45,7 +45,7 @@ export default function OrderRatings() {
   });
 
   const total = (quantity * RATING_PRICE).toFixed(2);
-  const selectedApp = apps?.find(a => a.id === appId);
+  const selectedApp = Array.isArray(apps) ? apps.find(a => a.id === appId) : undefined;
 
   return (
     <AppLayout>

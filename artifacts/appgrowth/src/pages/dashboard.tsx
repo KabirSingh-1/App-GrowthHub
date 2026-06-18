@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/layout/app-layout";
-import { useGetDashboardStats, useGetRecommendations } from "@workspace/api-client-react";
+import { useGetDashboardStats, useGetRecommendations } from "@/lib/mock-api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -23,10 +23,10 @@ export default function Dashboard() {
           </div>
         ) : stats ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatsCard title="Total Downloads" value={stats.totalDownloads.toLocaleString()} />
-            <StatsCard title="Avg Rating" value={stats.avgRating.toFixed(1)} subtitle={`${stats.totalReviews} reviews`} />
-            <StatsCard title="Active Campaigns" value={stats.activeCampaigns} />
-            <StatsCard title="Total Spend" value={`$${stats.totalSpend.toLocaleString()}`} />
+            <StatsCard title="Total Downloads" value={stats.totalDownloads?.toLocaleString() ?? '0'} />
+            <StatsCard title="Avg Rating" value={stats.avgRating?.toFixed(1) ?? '0.0'} subtitle={`${stats.totalReviews ?? 0} reviews`} />
+            <StatsCard title="Active Campaigns" value={stats.activeCampaigns ?? 0} />
+            <StatsCard title="Total Spend" value={`$${stats.totalSpend?.toLocaleString() ?? '0'}`} />
           </div>
         ) : null}
 
@@ -38,7 +38,7 @@ export default function Dashboard() {
                 <Skeleton key={i} className="h-48 rounded-2xl" />
               ))}
             </div>
-          ) : recommendations && recommendations.length > 0 ? (
+          ) : Array.isArray(recommendations) && recommendations.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {recommendations.map(rec => (
                 <Card key={rec.id} className="rounded-2xl border-border/50 shadow-sm hover-elevate transition-all cursor-pointer bg-card overflow-hidden">

@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/layout/app-layout";
-import { useListAsoKeywords } from "@workspace/api-client-react";
+import { useListAsoKeywords } from "@/lib/mock-api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Plus, ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
@@ -54,7 +54,7 @@ export default function Aso() {
                       <td className="p-4 pr-6"><Skeleton className="h-6 w-16 ml-auto" /></td>
                     </tr>
                   ))
-                ) : keywords && keywords.length > 0 ? (
+                ) : Array.isArray(keywords) && keywords.length > 0 ? (
                   keywords.map((kw, i) => (
                     <tr key={kw.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors font-medium">
                       <td className="p-4 pl-6 font-bold text-foreground text-base">{kw.keyword}</td>

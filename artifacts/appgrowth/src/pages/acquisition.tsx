@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/layout/app-layout";
-import { useListCampaigns } from "@workspace/api-client-react";
+import { useListCampaigns } from "@/lib/mock-api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Plus, BarChart3 } from "lucide-react";
@@ -81,7 +81,7 @@ export default function Acquisition() {
                       <td className="p-4"><Skeleton className="h-6 w-16 ml-auto" /></td>
                     </tr>
                   ))
-                ) : campaigns && campaigns.length > 0 ? (
+                ) : Array.isArray(campaigns) && campaigns.length > 0 ? (
                   campaigns.map(camp => (
                     <tr key={camp.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors font-medium">
                       <td className="p-4 font-bold text-foreground">{camp.name}</td>
