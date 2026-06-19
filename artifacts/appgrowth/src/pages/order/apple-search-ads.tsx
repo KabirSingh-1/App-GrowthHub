@@ -4,15 +4,15 @@ import { useListApps, useCreateOrder } from "@/lib/mock-api";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 
-const META_FEATURES = [
-  "Creative design included",
-  "Weekly performance reporting",
-  "Dedicated media buyer",
-  "Install-optimized campaigns",
-  "5% management fee only",
+const APPLE_FEATURES = [
+  "Integrated Apple Search Ads partner",
+  "DSP and programmatic support",
+  "Keyword and audience targeting",
+  "Campaign brief uploads",
+  "Priority keyword bidding",
 ];
 
-export default function Marketing() {
+export default function AppleSearchAds() {
   const [appId, setAppId] = useState<number | null>(null);
   const [budget, setBudget] = useState("");
   const [audience, setAudience] = useState("");
@@ -34,7 +34,7 @@ export default function Marketing() {
     createOrder.mutate({
       data: {
         appId,
-        serviceType: "meta_ads",
+        serviceType: "apple_search_ads",
         amount: parseFloat(budget) * 0.05 || 0,
         notes: audience || undefined,
       },
@@ -45,23 +45,23 @@ export default function Marketing() {
     <AppLayout>
       <div className="space-y-10">
         <div>
-          <h1 className="text-4xl font-black tracking-tight">Meta Ads</h1>
-          <p className="text-muted-foreground mt-2 text-lg">Managed paid acquisition through Meta Ads.</p>
+          <h1 className="text-4xl font-black tracking-tight">Apple Search Ads</h1>
+          <p className="text-muted-foreground mt-2 text-lg">Managed paid acquisition through Apple Search Ads.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-6">
             <div>
               <h2 className="text-3xl font-black">
-                Managed Meta Ads
+                Apple Search Ads
               </h2>
               <p className="text-muted-foreground mt-2 text-lg">
-                5% management fee. No contracts. Pause anytime.
+                Reach users at the exact moment they're searching.
               </p>
             </div>
 
             <ul className="space-y-3">
-              {META_FEATURES.map(f => (
+              {APPLE_FEATURES.map(f => (
                 <li key={f} className="flex items-start gap-3">
                   <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <span className="font-medium">{f}</span>
@@ -75,6 +75,7 @@ export default function Marketing() {
               <p className="text-sm text-muted-foreground mt-1">of your monthly ad spend. No setup fees.</p>
             </div>
           </div>
+
 
           <div className="bg-card rounded-3xl border border-border/50 p-8">
             {submitted ? (
