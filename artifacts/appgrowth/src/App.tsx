@@ -15,6 +15,8 @@ import Settings from "@/pages/settings";
 import OrderRatings from "@/pages/order/ratings";
 import OrderAsoInstalls from "@/pages/order/aso-installs";
 import OrderVideos from "@/pages/order/videos";
+import ReplyToReviews from "@/pages/order/reply-to-reviews";
+import AppleSearchAds from "@/pages/order/apple-search-ads";
 import Orders from "@/pages/orders";
 import Marketing from "@/pages/marketing";
 import SearchResults from "@/pages/search";
@@ -43,6 +45,8 @@ function Router() {
       <Route path="/order/ratings" component={OrderRatings} />
       <Route path="/order/aso-installs" component={OrderAsoInstalls} />
       <Route path="/order/videos" component={OrderVideos} />
+      <Route path="/order/reply-to-reviews" component={ReplyToReviews} />
+      <Route path="/order/apple-search-ads" component={AppleSearchAds} />
       <Route path="/orders" component={Orders} />
       <Route path="/marketing" component={Marketing} />
       <Route path="/search" component={SearchResults} />

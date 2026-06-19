@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, AppWindow, Star, Search, Play, Bell, Megaphone, ShoppingBag, Settings } from "lucide-react";
+import { LayoutDashboard, AppWindow, Star, Search, Play, Bell, Megaphone, ShoppingBag, Settings, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const mainNav = [
@@ -8,11 +8,13 @@ const mainNav = [
 ];
 
 const serviceNav = [
-  { name: "Ratings", href: "/ratings", icon: Star },
+  { name: "Ratings & Reviews", href: "/ratings", icon: Star },
+  { name: "AI Reply to Reviews", href: "/order/reply-to-reviews", icon: MessageSquare },
   { name: "ASO Installs", href: "/order/aso-installs", icon: Search },
   { name: "UGC Videos", href: "/order/videos", icon: Play },
-  { name: "Push Notifications", href: "/notifications", icon: Bell },
+  { name: "Get AppStorys", href: "/notifications", icon: Bell },
   { name: "Meta Ads", href: "/marketing", icon: Megaphone },
+  { name: "Apple Search Ads", href: "/order/apple-search-ads", icon: Search },
 ];
 
 export function Sidebar() {
