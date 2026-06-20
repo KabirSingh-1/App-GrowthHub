@@ -97,10 +97,32 @@ function StarRating({ rating }: { rating: number | null }) {
 
 // ─── App Card ─────────────────────────────────────────────────────────────────
 
+import { addApp } from "@/lib/app-store";
+
 function AppCard({ app }: { app: AppResult }) {
   const isAppStore = app.store === "App Store";
+  const [, setLocation] = useLocation();
+
+  const handleSelectApp = () => {
+    addApp({
+      id: app.appId,
+      name: app.name,
+      developer: app.developer,
+      platform: isAppStore ? "iOS" : "Android",
+      iconUrl: app.icon,
+      rating: app.rating,
+      bundleId: app.appId,
+      storeUrl: app.url,
+      addedAt: new Date().toISOString()
+    });
+    setLocation(`/apps`);
+  };
+
   return (
-    <div className="flex items-start gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+    <div 
+      onClick={handleSelectApp}
+      className="flex items-start gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group cursor-pointer"
+    >
       {/* Icon */}
       <div className="flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
         {app.icon

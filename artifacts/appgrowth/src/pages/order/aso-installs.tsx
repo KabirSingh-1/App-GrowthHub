@@ -2,7 +2,10 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import appStoreIcon from "@/assets/app-store.svg";
 import { getApps, StoredApp } from "@/lib/app-store";
 import { AppLayout } from "@/components/layout/app-layout";
+import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 import { Settings, Upload, Info, Headphones, X, Copy, ChevronDown, Search, AlertCircle, PlusCircle, Plus, Loader2, BarChart2, Ticket } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const TARGET_COUNTRIES = [
   { code: "US", name: "United States", flag: "🇺🇸" },
@@ -23,6 +26,35 @@ export default function OrderAsoInstalls() {
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [activeSuggestion, setActiveSuggestion] = useState(-1);
+  const [language, setLanguage] = useState("English");
+  const [deliveryType, setDeliveryType] = useState("Spread Installs Within 24h");
+
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+
+  const handleStartPromotion = () => {
+    toast({
+      title: "Promotion Started",
+      description: "Your ASO Installs promotion has been successfully launched.",
+    });
+    setLocation("/orders");
+  };
+
+  const handleSaveDraft = () => {
+    toast({
+      title: "Draft Saved",
+      description: "Your promotion draft has been saved securely.",
+    });
+    setLocation("/orders");
+  };
+
+  const handleStartFuture = () => {
+    toast({
+      title: "Promotion Scheduled",
+      description: "Your promotion has been scheduled for the future.",
+    });
+    setLocation("/orders");
+  };
 
   // App dropdown states
   const [isAppDropdownOpen, setIsAppDropdownOpen] = useState(false);
@@ -499,9 +531,6 @@ export default function OrderAsoInstalls() {
                           <Plus className="w-[12px] h-[12px]" />
                         </button>
                       </div>
-                      <button className="text-[13px] font-semibold text-[#635BFF] hover:text-indigo-700 flex items-center gap-1">
-                        Preview <ChevronDown className="w-3.5 h-3.5 -rotate-90" />
-                      </button>
                     </div>
 
                     {days.find(d => d.id === activeDayId)?.keywords.map((kw, idx) => (
@@ -556,20 +585,33 @@ export default function OrderAsoInstalls() {
                       Language <Info className="w-3.5 h-3.5 text-gray-400" />
                     </div>
                     <div>
-                      <div className="flex items-center justify-between border border-gray-200 bg-white rounded-[6px] h-[36px] px-3 cursor-pointer shadow-sm w-[200px]">
-                        <span className="text-[13px] text-gray-800 font-medium">English</span>
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
-                      </div>
+                      <Select value={language} onValueChange={setLanguage}>
+                        <SelectTrigger className="w-[200px] h-[36px] bg-white border-gray-200 text-[13px] text-gray-800 font-medium shadow-sm rounded-[6px] focus:ring-[#635BFF]">
+                          <SelectValue placeholder="Language" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white rounded-[6px] text-[13px]">
+                          <SelectItem value="English">English</SelectItem>
+                          <SelectItem value="Spanish">Spanish</SelectItem>
+                          <SelectItem value="French">French</SelectItem>
+                          <SelectItem value="German">German</SelectItem>
+                          <SelectItem value="Japanese">Japanese</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="flex items-center gap-1 text-[13px] font-semibold text-gray-700">
                       Delivery Type
                     </div>
                     <div>
-                      <div className="flex items-center justify-between border border-gray-200 bg-white rounded-[6px] h-[36px] px-3 cursor-pointer shadow-sm w-[280px]">
-                        <span className="text-[13px] text-gray-800 font-medium">Spread Installs Within 24h</span>
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
-                      </div>
+                      <Select value={deliveryType} onValueChange={setDeliveryType}>
+                        <SelectTrigger className="w-[280px] h-[36px] bg-white border-gray-200 text-[13px] text-gray-800 font-medium shadow-sm rounded-[6px] focus:ring-[#635BFF]">
+                          <SelectValue placeholder="Delivery Type" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white rounded-[6px] text-[13px]">
+                          <SelectItem value="Spread Installs Within 24h">Spread Installs Within 24h</SelectItem>
+                          <SelectItem value="Deliver as fast as possible">Deliver as fast as possible</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
@@ -587,36 +629,24 @@ export default function OrderAsoInstalls() {
 
                 <div className="p-6">
                   <div className="grid grid-cols-[120px_1fr] gap-y-5 items-center mb-6">
-                    <div className="text-[13px] font-semibold text-gray-700">
-                      Discount
-                    </div>
-                    <div>
-                      <div className="inline-flex items-center border border-gray-200 bg-white rounded-[6px] h-[36px] px-3 min-w-[280px] shadow-sm">
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#FFF4ED] text-[#FF5A00] text-[12px] font-bold rounded-[4px]">
-                          <Ticket className="w-[14px] h-[14px] stroke-[2.5]" /> First Order is 50% OFF
-                        </div>
-                      </div>
-                    </div>
-
                     <div className="text-[13px] font-semibold text-gray-700 mt-2">
                       Total Price
                     </div>
                     <div className="flex items-center gap-2 mt-2">
                       <span className="text-[18px] font-extrabold text-gray-900 border-b border-gray-900 leading-tight">$50.00</span>
-                      <span className="text-[13px] font-semibold text-[#635BFF]">(Discount: $50.00)</span>
                     </div>
                   </div>
 
                   <div className="w-full h-px bg-gray-100 mb-6"></div>
 
                   <div className="flex gap-3">
-                    <button className="bg-[#635BFF] hover:bg-indigo-600 text-white px-6 h-[40px] rounded-[6px] text-[13px] font-semibold transition-colors shadow-sm shadow-indigo-200">
+                    <button onClick={handleStartPromotion} className="bg-[#635BFF] hover:bg-indigo-600 text-white px-6 h-[40px] rounded-[6px] text-[13px] font-semibold transition-colors shadow-sm shadow-indigo-200">
                       Start Promotion
                     </button>
-                    <button className="border border-[#635BFF] text-[#635BFF] hover:bg-[#635BFF]/5 px-6 h-[40px] rounded-[6px] text-[13px] font-semibold transition-colors shadow-sm">
+                    <button onClick={handleSaveDraft} className="border border-[#635BFF] text-[#635BFF] hover:bg-[#635BFF]/5 px-6 h-[40px] rounded-[6px] text-[13px] font-semibold transition-colors shadow-sm">
                       Save Draft
                     </button>
-                    <button className="border border-[#635BFF] text-[#635BFF] hover:bg-[#635BFF]/5 px-6 h-[40px] rounded-[6px] text-[13px] font-semibold transition-colors shadow-sm">
+                    <button onClick={handleStartFuture} className="border border-[#635BFF] text-[#635BFF] hover:bg-[#635BFF]/5 px-6 h-[40px] rounded-[6px] text-[13px] font-semibold transition-colors shadow-sm">
                       Start in the Future
                     </button>
                   </div>
