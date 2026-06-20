@@ -1,174 +1,303 @@
-import { useState } from "react";
-import { AppLayout } from "@/components/layout/app-layout";
-import { useListApps, useCreateOrder } from "@/lib/mock-api";
-import { Button } from "@/components/ui/button";
-import { AI_VIDEO_PRICE, NON_AI_VIDEO_PRICE } from "@/constants";
-import { cn } from "@/lib/utils";
-import { Play, CheckCircle, Zap, Users } from "lucide-react";
+import React, { useState, useMemo } from "react";
 
-const portfolioItems = [
-  { title: "Fitness App Launch — 3-Hook Series", type: "AI UGC", gradient: "from-violet-500 to-purple-700" },
-  { title: "Finance App — Trust & Credibility", type: "Non-AI UGC", gradient: "from-emerald-400 to-teal-600" },
-  { title: "Productivity Tool — Problem/Solution", type: "AI UGC", gradient: "from-orange-400 to-coral-600" },
+/**
+ * UGCVideos — buy AI / creator UGC video ads, priced live.
+ * Drop into any React app:  <UGCVideos />
+ * Self-contained: injects Plus Jakarta Sans + keyframes itself, no external CSS.
+ */
+
+const PURPLE = "#7c3aed";
+const money = (n: number) => "$" + n.toLocaleString();
+
+const navTop = [
+  { icon: "▦", label: "Dashboard" },
+  { icon: "▭", label: "My Apps" },
+];
+const navServices = [
+  { icon: "★", label: "Ratings & Reviews" },
+  { icon: "💬", label: "Reply to Reviews" },
+  { icon: "⌕", label: "ASO Installs" },
+  { icon: "▷", label: "UGC Videos", active: true },
+  { icon: "🔔", label: "Get AppStorys" },
+  { icon: "📣", label: "Meta Ads" },
+  { icon: "⌕", label: "Apple Search Ads" },
 ];
 
-export default function OrderVideos() {
-  const [videoType, setVideoType] = useState<"ai" | "non_ai">("ai");
-  const [appId, setAppId] = useState<number | null>(null);
-  const [notes, setNotes] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [orderId, setOrderId] = useState<number | null>(null);
+const TYPES = [
+  { key: "ai", label: "AI UGC", price: 10, sub: "Script-to-video, AI actor & voiceover" },
+  { key: "human", label: "Creator UGC", price: 30, sub: "Real creator, real face, real trust" },
+];
+const DESTS = [
+  { key: "meta", icon: "📣", label: "Meta Ads", note: "Optimized for Meta — 9:16 Reels + 1:1 Feed cuts, exported ready to drop into Ads Manager." },
+  { key: "tiktok", icon: "🎵", label: "TikTok", note: "Native 9:16 vertical with trend-style hooks built to pass as organic." },
+  { key: "appstore", icon: "📱", label: "App Store", note: "App-preview cuts in 9:16 and 16:9, sized to App Store and Play Store specs." },
+  { key: "search", icon: "🔎", label: "Search Ads", note: "Tight 1:1 and 9:16 cuts tuned for Apple Search Ads discovery placements." },
+];
+const HOOKS = [1, 3, 5];
+const ADDONS = [
+  { key: "rush", label: "24-hour rush delivery", desc: "Skip the queue — videos back within a day", price: 8, per: false },
+  { key: "multi", label: "Multi-format pack", desc: "Every aspect ratio: 9:16 · 1:1 · 4:5 · 16:9", price: 6, per: true },
+];
 
-  const { data: apps } = useListApps();
-  const createOrder = useCreateOrder({
-    mutation: {
-      onSuccess: (order) => {
-        setOrderId(order.id);
-        setSubmitted(true);
-      },
-    },
-  });
+const PORTFOLIO = [
+  { title: "Fitness App Launch — 3-Hook Series", grad: "linear-gradient(150deg,#8b5cf6,#7c1fd6)", tag: "AI UGC", tagBg: "#f3eefe", tagColor: "#7c3aed" },
+  { title: "Finance App — Trust & Credibility", grad: "linear-gradient(150deg,#10b981,#0f766e)", tag: "Creator UGC", tagBg: "#e9f9f1", tagColor: "#0f9d63" },
+  { title: "Productivity Tool — Problem/Solution", grad: "linear-gradient(150deg,#fb923c,#f97316)", tag: "AI UGC", tagBg: "#f3eefe", tagColor: "#7c3aed" },
+];
 
-  const price = videoType === "ai" ? AI_VIDEO_PRICE : NON_AI_VIDEO_PRICE;
+const navItem = (active: boolean): React.CSSProperties => ({
+  display: "flex", alignItems: "center", gap: 12,
+  padding: "10px 12px", borderRadius: 10,
+  background: active ? PURPLE : "transparent",
+  color: active ? "#fff" : "#6b6577",
+  fontWeight: active ? 600 : 500, fontSize: 15,
+  boxShadow: active ? "0 6px 18px rgba(124,58,237,0.32)" : "none",
+  cursor: "pointer",
+});
+const sectionLabel: React.CSSProperties = { padding: "18px 12px 8px", fontSize: 11, fontWeight: 700, letterSpacing: 1.2, color: "#a39fae" };
+const eyebrow: React.CSSProperties = { fontSize: 13, fontWeight: 700, letterSpacing: 1.4, color: "#9b96a6" };
+const stepTitle: React.CSSProperties = { fontWeight: 700, fontSize: 16, marginBottom: 12 };
+
+export default function UGCVideos() {
+  const [type, setType] = useState("ai");
+  const [dest, setDest] = useState("meta");
+  const [qty, setQty] = useState(3);
+  const [hooks, setHooks] = useState(3);
+  const [rush, setRush] = useState(true);
+  const [multi, setMulti] = useState(false);
+  const [placed, setPlaced] = useState(false);
+
+  // any config change clears a placed order
+  const change = (fn: (...args: any[]) => void) => (...a: any[]) => { setPlaced(false); fn(...a); };
+
+  const order = useMemo(() => {
+    const base = type === "ai" ? 10 : 30;
+    const hookSurcharge = hooks === 5 ? 4 : 0;
+    const multiPer = multi ? 6 : 0;
+    const videosCost = base * qty;
+    const typeName = type === "ai" ? "AI UGC video" : "Creator UGC video";
+
+    const lineItems = [{ label: `${typeName} × ${qty}`, amount: money(videosCost) }];
+    if (hookSurcharge) lineItems.push({ label: `5 hook variations × ${qty}`, amount: money(hookSurcharge * qty) });
+    if (multi) lineItems.push({ label: `Multi-format pack × ${qty}`, amount: money(multiPer * qty) });
+    if (rush) lineItems.push({ label: "24-hour rush delivery", amount: money(8) });
+
+    const total = videosCost + hookSurcharge * qty + multiPer * qty + (rush ? 8 : 0);
+
+    let deliveryText;
+    if (type === "ai") deliveryText = rush ? "24 hours" : "48 hours";
+    else deliveryText = rush ? "2–3 days" : "5–7 days";
+
+    const destLabel = (DESTS.find((d) => d.key === dest) || DESTS[0]).label;
+    return { lineItems, total, deliveryText, summarySub: `${typeName}s for ${destLabel}` };
+  }, [type, dest, qty, hooks, rush, multi]);
+
+  const destNote = (DESTS.find((d) => d.key === dest) || DESTS[0]).note;
 
   return (
-    <AppLayout>
-      <div className="space-y-12">
-        <div>
-          <h1 className="text-4xl font-black tracking-tight">UGC Videos</h1>
-          <p className="text-muted-foreground mt-2 text-lg">Scroll-stopping video ads built for mobile app installs.</p>
-        </div>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        .ugc-root *, .ugc-root *::before, .ugc-root *::after { box-sizing: border-box; }
+        @keyframes ugcPop { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
+      `}</style>
 
-        <div className="space-y-4">
-          <h2 className="text-xl font-black text-muted-foreground uppercase tracking-widest text-sm">Portfolio</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {portfolioItems.map((item, i) => (
-              <div key={i} className="rounded-3xl overflow-hidden border border-border/50 shadow-sm group cursor-pointer hover-elevate">
-                <div className={cn("bg-gradient-to-br h-44 flex items-center justify-center relative", item.gradient)}>
-                  <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Play className="h-6 w-6 text-white ml-1" />
-                  </div>
+      <div className="ugc-root" style={{ display: "flex", minHeight: "100vh", fontFamily: "'Plus Jakarta Sans',-apple-system,sans-serif", background: "#f6f5f8", color: "#1a1523" }}>
+        {/* Sidebar */}
+        <aside style={{ width: 248, flex: "none", background: "#fff", borderRight: "1px solid #ececf1", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "26px 22px 22px" }}>
+            <div style={{ width: 38, height: 38, flex: "none", borderRadius: "50%", background: PURPLE, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, letterSpacing: 0.5 }}>AV</div>
+            <span style={{ fontWeight: 800, fontSize: 19 }}>AppVersal</span>
+          </div>
+          <nav style={{ display: "flex", flexDirection: "column", gap: 2, padding: "6px 14px" }}>
+            {navTop.map((it) => (
+              <div key={it.label} style={navItem(false)}><span style={{ fontSize: 16 }}>{it.icon}</span> {it.label}</div>
+            ))}
+            <div style={sectionLabel}>SERVICES</div>
+            {navServices.map((it) => (
+              <div key={it.label} style={navItem(!!it.active)}><span style={{ fontSize: 16 }}>{it.icon}</span> {it.label}</div>
+            ))}
+            <div style={sectionLabel}>ACCOUNT</div>
+            <div style={navItem(false)}><span style={{ fontSize: 16 }}>🛍</span> My Orders</div>
+          </nav>
+          <div style={{ marginTop: "auto", padding: "18px 26px 28px" }}>
+            <div style={navItem(false)}><span style={{ fontSize: 16 }}>⚙</span> Settings</div>
+          </div>
+        </aside>
+
+        {/* Main */}
+        <main style={{ flex: 1, padding: "48px 52px 72px", maxWidth: 1280 }}>
+          <h1 style={{ margin: 0, fontSize: 38, fontWeight: 800, letterSpacing: -1 }}>UGC Videos</h1>
+          <p style={{ margin: "10px 0 0", fontSize: 17, color: "#6b6577" }}>Order scroll-stopping AI video ads — built and exported for the channel you run them on.</p>
+
+          {/* Portfolio */}
+          <div style={{ marginTop: 38, ...eyebrow }}>PORTFOLIO</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 22, marginTop: 16 }}>
+            {PORTFOLIO.map((p) => (
+              <div key={p.title} style={{ background: "#fff", border: "1px solid #ececf1", borderRadius: 16, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,.04)" }}>
+                <div style={{ height: 184, background: p.grad, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ width: 58, height: 58, borderRadius: "50%", background: "rgba(255,255,255,.22)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 22 }}>▶</div>
                 </div>
-                <div className="bg-card p-4">
-                  <p className="font-bold text-sm leading-tight">{item.title}</p>
-                  <span className={cn("inline-block mt-2 text-xs font-bold px-2.5 py-1 rounded-full", item.type === "AI UGC" ? "bg-violet-100 text-violet-700" : "bg-emerald-100 text-emerald-700")}>
-                    {item.type}
-                  </span>
+                <div style={{ padding: 18 }}>
+                  <div style={{ fontWeight: 700, fontSize: 15.5 }}>{p.title}</div>
+                  <span style={{ display: "inline-block", marginTop: 10, padding: "4px 10px", borderRadius: 7, background: p.tagBg, color: p.tagColor, fontSize: 11.5, fontWeight: 700 }}>{p.tag}</span>
                 </div>
               </div>
             ))}
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className={cn("rounded-3xl border-2 p-8 cursor-pointer transition-all", videoType === "ai" ? "border-primary bg-primary/5 shadow-lg" : "border-border bg-card hover:border-primary/30")}
-            onClick={() => setVideoType("ai")}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
-                <Zap className="h-5 w-5 text-violet-600" />
-              </div>
+          {/* Order builder */}
+          <div style={{ marginTop: 44, ...eyebrow }}>ORDER YOUR VIDEOS</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 24, marginTop: 16, alignItems: "start" }}>
+
+            {/* Config */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
+              {/* Type */}
               <div>
-                <div className="font-black text-xl">AI UGC Video</div>
-                <div className="text-3xl font-black text-primary">${AI_VIDEO_PRICE}</div>
+                <div style={stepTitle}>1 · Choose your video type</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                  {TYPES.map((t) => {
+                    const on = type === t.key;
+                    return (
+                      <div key={t.key} onClick={change(() => setType(t.key))} style={{
+                        borderRadius: 14, padding: 18, cursor: "pointer", transition: "all .15s ease",
+                        border: `1.5px solid ${on ? PURPLE : "#e8e6ee"}`,
+                        background: on ? "#f6f1fe" : "#fff",
+                        boxShadow: on ? "0 6px 18px rgba(124,58,237,.16)" : "none",
+                      }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span style={{ fontWeight: 700, fontSize: 16 }}>{t.label}</span>
+                          <span style={{ fontSize: 20, fontWeight: 800, color: PURPLE }}>{money(t.price)}</span>
+                        </div>
+                        <div style={{ fontSize: 13, color: "#6b6577", marginTop: 6 }}>{t.sub}</div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-            <p className="text-muted-foreground font-medium mb-4">Script-to-video in 48 hours. Multiple hooks. A/B ready.</p>
-            <ul className="space-y-2">
-              {["AI actor & voiceover", "Captions included", "3 hook variations", "48hr delivery"].map(f => (
-                <li key={f} className="flex items-center gap-2 text-sm font-medium">
-                  <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
-                  {f}
-                </li>
-              ))}
-            </ul>
-          </div>
 
-          <div className={cn("rounded-3xl border-2 p-8 cursor-pointer transition-all", videoType === "non_ai" ? "border-primary bg-primary/5 shadow-lg" : "border-border bg-card hover:border-primary/30")}
-            onClick={() => setVideoType("non_ai")}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                <Users className="h-5 w-5 text-emerald-600" />
-              </div>
+              {/* Destination */}
               <div>
-                <div className="font-black text-xl">Non-AI UGC Video</div>
-                <div className="text-3xl font-black text-primary">${NON_AI_VIDEO_PRICE}</div>
+                <div style={stepTitle}>2 · Where will you run it?</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+                  {DESTS.map((d) => {
+                    const on = dest === d.key;
+                    return (
+                      <div key={d.key} onClick={change(() => setDest(d.key))} style={{
+                        borderRadius: 12, padding: "14px 10px", textAlign: "center", cursor: "pointer", transition: "all .15s ease",
+                        border: `1.5px solid ${on ? PURPLE : "#e8e6ee"}`,
+                        background: on ? "#f6f1fe" : "#fff",
+                        color: on ? "#5b21b6" : "#3a3343",
+                      }}>
+                        <div style={{ fontSize: 22 }}>{d.icon}</div>
+                        <div style={{ fontWeight: 700, fontSize: 14, marginTop: 8 }}>{d.label}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ marginTop: 12, display: "flex", alignItems: "flex-start", gap: 9, padding: "13px 15px", borderRadius: 11, background: "#f3eefe", color: "#5b21b6", fontSize: 13.5, lineHeight: 1.45, fontWeight: 500 }}>
+                  <span style={{ fontSize: 15 }}>✦</span><span>{destNote}</span>
+                </div>
+              </div>
+
+              {/* Quantity + hooks */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                <div>
+                  <div style={stepTitle}>3 · How many videos?</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "10px 16px", border: "1.5px solid #e8e6ee", borderRadius: 12, background: "#fff", width: "fit-content" }}>
+                    <div onClick={change(() => setQty((q) => Math.max(1, q - 1)))} style={{ width: 32, height: 32, borderRadius: 8, background: "#f4f2f8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 700, color: "#5b21b6", cursor: "pointer", userSelect: "none" }}>−</div>
+                    <span style={{ fontSize: 22, fontWeight: 800, minWidth: 28, textAlign: "center" }}>{qty}</span>
+                    <div onClick={change(() => setQty((q) => Math.min(20, q + 1)))} style={{ width: 32, height: 32, borderRadius: 8, background: "#f4f2f8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 700, color: "#5b21b6", cursor: "pointer", userSelect: "none" }}>+</div>
+                  </div>
+                </div>
+                <div>
+                  <div style={stepTitle}>4 · Hook variations</div>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    {HOOKS.map((n) => {
+                      const on = hooks === n;
+                      return (
+                        <div key={n} onClick={change(() => setHooks(n))} style={{
+                          padding: "11px 0", flex: 1, textAlign: "center", borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: "pointer", transition: "all .15s ease",
+                          border: `1.5px solid ${on ? PURPLE : "#e8e6ee"}`,
+                          background: on ? "#f6f1fe" : "#fff",
+                          color: on ? "#5b21b6" : "#3a3343",
+                        }}>{n}{n === 1 ? " hook" : " hooks"}</div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Add-ons */}
+              <div>
+                <div style={stepTitle}>5 · Add-ons</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {ADDONS.map((a) => {
+                    const on = a.key === "rush" ? rush : multi;
+                    const toggle = a.key === "rush" ? () => setRush((v) => !v) : () => setMulti((v) => !v);
+                    return (
+                      <div key={a.key} onClick={change(toggle)} style={{
+                        display: "flex", alignItems: "center", gap: 13, padding: "14px 16px", borderRadius: 12, cursor: "pointer", transition: "all .15s ease",
+                        border: `1.5px solid ${on ? PURPLE : "#e8e6ee"}`,
+                        background: on ? "#f6f1fe" : "#fff",
+                      }}>
+                        <div style={on
+                          ? { width: 24, height: 24, flex: "none", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, background: PURPLE, color: "#fff" }
+                          : { width: 24, height: 24, flex: "none", borderRadius: 7, border: "1.5px solid #d6d2de", background: "#fff" }}>{on ? "✓" : ""}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 700, fontSize: 14.5 }}>{a.label}</div>
+                          <div style={{ fontSize: 12.5, color: "#6b6577", marginTop: 2 }}>{a.desc}</div>
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: 14.5, color: "#3a3343" }}>+{money(a.price)}{a.per ? "/video" : ""}</div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-            <p className="text-muted-foreground font-medium mb-4">Real creator. Real face. Real trust.</p>
-            <ul className="space-y-2">
-              {["Human creator", "1 polished variation", "5–7 day delivery", "Usage rights included"].map(f => (
-                <li key={f} className="flex items-center gap-2 text-sm font-medium">
-                  <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
-                  {f}
-                </li>
-              ))}
-            </ul>
+
+            {/* Summary */}
+            <div style={{ position: "sticky", top: 24, background: "#fff", border: "1px solid #ececf1", borderRadius: 18, boxShadow: "0 10px 30px rgba(26,21,35,.07)", overflow: "hidden" }}>
+              <div style={{ padding: "22px 22px 18px", borderBottom: "1px solid #f1eff4" }}>
+                <div style={{ fontWeight: 800, fontSize: 17 }}>Order summary</div>
+                <div style={{ fontSize: 13, color: "#6b6577", marginTop: 3 }}>{order.summarySub}</div>
+              </div>
+              <div style={{ padding: "18px 22px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+                  {order.lineItems.map((li, i) => (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 14 }}>
+                      <span style={{ color: "#4a4453" }}>{li.label}</span>
+                      <span style={{ fontWeight: 700 }}>{li.amount}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ height: 1, background: "#f1eff4", margin: "18px 0" }} />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                  <span style={{ fontWeight: 700, fontSize: 15 }}>Total</span>
+                  <span style={{ fontWeight: 800, fontSize: 28, color: PURPLE }}>{money(order.total)}</span>
+                </div>
+                <div style={{ fontSize: 12.5, color: "#8a8595", marginTop: 6 }}>Delivered in {order.deliveryText}</div>
+
+                {placed ? (
+                  <div style={{ marginTop: 18, padding: 16, borderRadius: 12, background: "#eefaf2", border: "1px solid #c9efd8", textAlign: "center", animation: "ugcPop .3s ease both" }}>
+                    <div style={{ fontSize: 26 }}>✓</div>
+                    <div style={{ fontWeight: 700, fontSize: 14.5, marginTop: 4, color: "#0f7a45" }}>Order placed</div>
+                    <div style={{ fontSize: 12.5, color: "#3f8a62", marginTop: 3 }}>We'll email your videos when they're ready.</div>
+                    <div onClick={() => setPlaced(false)} style={{ marginTop: 12, fontSize: 13, fontWeight: 700, color: PURPLE, cursor: "pointer" }}>Start another order</div>
+                  </div>
+                ) : (
+                  <>
+                    <div onClick={() => setPlaced(true)} style={{ marginTop: 18, width: "100%", padding: 15, borderRadius: 12, background: PURPLE, color: "#fff", fontWeight: 700, fontSize: 16, textAlign: "center", cursor: "pointer", boxShadow: "0 10px 24px rgba(124,58,237,.32)" }}>
+                      Buy {qty}{qty === 1 ? " video" : " videos"} · {money(order.total)}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "#a39fae", textAlign: "center", marginTop: 10 }}>Secure checkout · Revisions included</div>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-
-        {!submitted ? (
-          <div className="bg-card rounded-3xl border border-border/50 p-8 space-y-6 max-w-xl">
-            <h2 className="text-2xl font-black">Place your order</h2>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Select App</label>
-              <select
-                className="w-full rounded-xl border border-border bg-background px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-primary"
-                value={appId ?? ""}
-                onChange={e => setAppId(Number(e.target.value))}
-              >
-                <option value="">Choose an app...</option>
-                {apps?.map(app => (
-                  <option key={app.id} value={app.id}>{app.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Describe your app</label>
-              <textarea
-                className="w-full rounded-xl border border-border bg-background px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-                rows={4}
-                placeholder="What does your app do? Who is it for? Any specific talking points or hooks you want included?"
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-              />
-            </div>
-
-            <div className="bg-primary/5 rounded-2xl p-4 flex items-center justify-between">
-              <span className="font-bold">{videoType === "ai" ? "AI UGC Video" : "Non-AI UGC Video"}</span>
-              <span className="text-2xl font-black text-primary">${price}</span>
-            </div>
-
-            <Button
-              className="w-full rounded-xl font-bold text-base py-6"
-              disabled={!appId || createOrder.isPending}
-              onClick={() => {
-                if (!appId) return;
-                createOrder.mutate({
-                  data: {
-                    appId,
-                    serviceType: videoType === "ai" ? "ai_ugc_video" : "non_ai_ugc_video",
-                    amount: price,
-                    notes: notes || undefined,
-                  },
-                });
-              }}
-            >
-              {createOrder.isPending ? "Placing order..." : `Place Order — $${price}`}
-            </Button>
-            <p className="text-center text-sm text-muted-foreground">Payments coming soon — your order will be confirmed manually.</p>
-          </div>
-        ) : (
-          <div className="bg-card rounded-3xl border border-border/50 p-8 text-center space-y-4 max-w-xl">
-            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-              <CheckCircle className="h-8 w-8 text-green-600" />
-            </div>
-            <h2 className="text-2xl font-black">Order #{orderId} placed!</h2>
-            <p className="text-muted-foreground">Our creative team will reach out within 24 hours to kick things off.</p>
-          </div>
-        )}
+        </main>
       </div>
-    </AppLayout>
+    </>
   );
 }
