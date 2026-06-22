@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from "react";
 
+import { AppLayout } from "@/components/layout/app-layout";
+
 /**
  * UGCVideos — buy AI / creator UGC video ads, priced live.
  * Drop into any React app:  <UGCVideos />
@@ -8,20 +10,6 @@ import React, { useState, useMemo } from "react";
 
 const PURPLE = "#7c3aed";
 const money = (n: number) => "$" + n.toLocaleString();
-
-const navTop = [
-  { icon: "▦", label: "Dashboard" },
-  { icon: "▭", label: "My Apps" },
-];
-const navServices = [
-  { icon: "★", label: "Ratings & Reviews" },
-  { icon: "💬", label: "Reply to Reviews" },
-  { icon: "⌕", label: "ASO Installs" },
-  { icon: "▷", label: "UGC Videos", active: true },
-  { icon: "🔔", label: "Get AppStorys" },
-  { icon: "📣", label: "Meta Ads" },
-  { icon: "⌕", label: "Apple Search Ads" },
-];
 
 const TYPES = [
   { key: "ai", label: "AI UGC", price: 10, sub: "Script-to-video, AI actor & voiceover" },
@@ -45,15 +33,6 @@ const PORTFOLIO = [
   { title: "Productivity Tool — Problem/Solution", grad: "linear-gradient(150deg,#fb923c,#f97316)", tag: "AI UGC", tagBg: "#f3eefe", tagColor: "#7c3aed" },
 ];
 
-const navItem = (active: boolean): React.CSSProperties => ({
-  display: "flex", alignItems: "center", gap: 12,
-  padding: "10px 12px", borderRadius: 10,
-  background: active ? PURPLE : "transparent",
-  color: active ? "#fff" : "#6b6577",
-  fontWeight: active ? 600 : 500, fontSize: 15,
-  boxShadow: active ? "0 6px 18px rgba(124,58,237,0.32)" : "none",
-  cursor: "pointer",
-});
 const sectionLabel: React.CSSProperties = { padding: "18px 12px 8px", fontSize: 11, fontWeight: 700, letterSpacing: 1.2, color: "#a39fae" };
 const eyebrow: React.CSSProperties = { fontSize: 13, fontWeight: 700, letterSpacing: 1.4, color: "#9b96a6" };
 const stepTitle: React.CSSProperties = { fontWeight: 700, fontSize: 16, marginBottom: 12 };
@@ -95,7 +74,7 @@ export default function UGCVideos() {
   const destNote = (DESTS.find((d) => d.key === dest) || DESTS[0]).note;
 
   return (
-    <>
+    <AppLayout>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         .ugc-root *, .ugc-root *::before, .ugc-root *::after { box-sizing: border-box; }
@@ -103,28 +82,6 @@ export default function UGCVideos() {
       `}</style>
 
       <div className="ugc-root" style={{ display: "flex", minHeight: "100vh", fontFamily: "'Plus Jakarta Sans',-apple-system,sans-serif", background: "#f6f5f8", color: "#1a1523" }}>
-        {/* Sidebar */}
-        <aside style={{ width: 248, flex: "none", background: "#fff", borderRight: "1px solid #ececf1", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "26px 22px 22px" }}>
-            <div style={{ width: 38, height: 38, flex: "none", borderRadius: "50%", background: PURPLE, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, letterSpacing: 0.5 }}>AV</div>
-            <span style={{ fontWeight: 800, fontSize: 19 }}>AppVersal</span>
-          </div>
-          <nav style={{ display: "flex", flexDirection: "column", gap: 2, padding: "6px 14px" }}>
-            {navTop.map((it) => (
-              <div key={it.label} style={navItem(false)}><span style={{ fontSize: 16 }}>{it.icon}</span> {it.label}</div>
-            ))}
-            <div style={sectionLabel}>SERVICES</div>
-            {navServices.map((it) => (
-              <div key={it.label} style={navItem(!!it.active)}><span style={{ fontSize: 16 }}>{it.icon}</span> {it.label}</div>
-            ))}
-            <div style={sectionLabel}>ACCOUNT</div>
-            <div style={navItem(false)}><span style={{ fontSize: 16 }}>🛍</span> My Orders</div>
-          </nav>
-          <div style={{ marginTop: "auto", padding: "18px 26px 28px" }}>
-            <div style={navItem(false)}><span style={{ fontSize: 16 }}>⚙</span> Settings</div>
-          </div>
-        </aside>
-
         {/* Main */}
         <main style={{ flex: 1, padding: "48px 52px 72px", maxWidth: 1280 }}>
           <h1 style={{ margin: 0, fontSize: 38, fontWeight: 800, letterSpacing: -1 }}>UGC Videos</h1>
@@ -298,6 +255,6 @@ export default function UGCVideos() {
           </div>
         </main>
       </div>
-    </>
+    </AppLayout>
   );
 }

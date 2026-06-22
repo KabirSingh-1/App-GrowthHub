@@ -7,12 +7,10 @@ import { addApp } from "@/lib/app-store";
 
 // ─── Platform Icons ───────────────────────────────────────────────────────────
 
+import appStoreIconSvg from "@/assets/app-store.svg";
+
 const AppStoreIcon = ({ size = 24 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="24" height="24" rx="5.5" fill="#1C8EF9" />
-    <path d="M12 4.5L13.545 7.636H16.8L14.13 9.546L15.18 12.75L12 10.909L8.82 12.75L9.87 9.546L7.2 7.636H10.455L12 4.5Z" fill="white" />
-    <path d="M8.5 14.5H15.5M10.5 17H13.5" stroke="white" strokeWidth="1.4" strokeLinecap="round" />
-  </svg>
+  <img src={appStoreIconSvg} width={size} height={size} alt="App Store" />
 );
 
 const GooglePlayIcon = ({ size = 24 }: { size?: number }) => (

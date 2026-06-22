@@ -1,11 +1,20 @@
 import React, { useMemo, useState } from "react";
 import { AppLayout } from "@/components/layout/app-layout";
 
-const APPS = [
-  { id: "fittrack", name: "FitTrack — Workout Log", initials: "FT", color: "#22a06b" },
-  { id: "snapbudget", name: "SnapBudget", initials: "SB", color: "#2a6fdb" },
-  { id: "mindful", name: "Mindful Minutes", initials: "MM", color: "#c4581f" },
-];
+import { getApps, StoredApp, getActiveAppId, setActiveAppId } from "@/lib/app-store";
+
+function getInitials(name: string) {
+  return name.substring(0, 2).toUpperCase();
+}
+
+function getColor(id: string) {
+  const colors = ["#22a06b", "#2a6fdb", "#c4581f", "#7c3aed", "#e84393"];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+}
 
 const POS_PRESETS = [
   { id: "p1", text: "Thank you so much for the awesome review — it genuinely makes our small team's day!" },
@@ -86,7 +95,18 @@ export default function ReplyToReviews() {
   const [keyFile, setKeyFile] = useState<string>("");
   const [done, setDone] = useState<boolean>(false);
 
-  const app = useMemo(() => APPS.find((a) => a.id === appId), [appId]);
+  const [apps, setApps] = useState<StoredApp[]>([]);
+
+  React.useEffect(() => {
+    const loadedApps = getApps();
+    setApps(loadedApps);
+    const activeId = getActiveAppId();
+    if (activeId && loadedApps.some(a => a.id === activeId)) {
+      setAppId(activeId);
+    }
+  }, []);
+
+  const app = useMemo(() => apps.find((a) => a.id === appId), [appId, apps]);
 
   const toggle = (setter: React.Dispatch<React.SetStateAction<Record<string, boolean>>>) => (id: string) =>
     setter((prev) => {
@@ -135,7 +155,7 @@ export default function ReplyToReviews() {
           <div>
             <h1 style={{ margin: "0 0 8px", fontSize: 31, fontWeight: 700, letterSpacing: "-.7px" }}>AI Reply to Reviews</h1>
             <p style={{ margin: 0, fontSize: 15.5, color: "#7d7a83", maxWidth: 520, lineHeight: 1.5 }}>
-              Let the AppVersal team reply to your store reviews for you — using your tone, on autopilot.
+              Let the AI reply to your store reviews for you — using your tone, on autopilot.
             </p>
           </div>
           <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 8, background: "#f0e6fc", color: "#7a23cf", border: "1px solid #e3d2fa", padding: "9px 15px", borderRadius: 999, fontWeight: 600, fontSize: 14, whiteSpace: "nowrap" }}>
@@ -148,7 +168,7 @@ export default function ReplyToReviews() {
           /* SUCCESS */
           <div style={{ background: "#fff", border: "1px solid #ededeb", borderRadius: 18, padding: "54px 44px", textAlign: "center", boxShadow: "0 1px 3px rgba(20,18,26,.04)" }}>
             <div style={{ width: 62, height: 62, borderRadius: "50%", background: "#eafaf1", border: "1px solid #cdeedd", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 22px" }}>
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#22a06b" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#22a06b" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7" /></svg>
             </div>
             <h2 style={{ margin: "0 0 10px", fontSize: 24, fontWeight: 700, letterSpacing: "-.4px" }}>You're all set</h2>
             <p style={{ margin: "0 auto 28px", fontSize: 15.5, color: "#7d7a83", maxWidth: 420, lineHeight: 1.55 }}>
@@ -169,17 +189,17 @@ export default function ReplyToReviews() {
                 <button onClick={() => setAppOpen((o) => !o)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "#f7f4f0", border: "1px solid #ebe7e2", borderRadius: 13, padding: "13px 16px", cursor: "pointer", fontSize: 14.5, color: "#17151a", textAlign: "left", fontFamily: "inherit" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: 11 }}>
                     {app && (
-                      <span style={{ flex: "none", width: 26, height: 26, borderRadius: 7, background: app.color, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700 }}>{app.initials}</span>
+                      <span style={{ flex: "none", width: 26, height: 26, borderRadius: 7, background: getColor(app.id), color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700 }}>{getInitials(app.name)}</span>
                     )}
                     <span style={{ color: app ? "#17151a" : "#a8a5ad" }}>{app ? app.name : "Select an app"}</span>
                   </span>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a97a0" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a97a0" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                 </button>
                 {appOpen && (
                   <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, background: "#fff", border: "1px solid #ececea", borderRadius: 14, boxShadow: "0 14px 38px rgba(20,18,26,.13)", padding: 7, zIndex: 20 }}>
-                    {APPS.map((a) => (
-                      <button key={a.id} onClick={() => { setAppId(a.id); setAppOpen(false); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, padding: "10px 11px", border: "none", background: "transparent", borderRadius: 10, cursor: "pointer", fontSize: 14.5, color: "#17151a", textAlign: "left", fontFamily: "inherit" }}>
-                        <span style={{ flex: "none", width: 28, height: 28, borderRadius: 8, background: a.color, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700 }}>{a.initials}</span>
+                    {apps.map((a) => (
+                      <button key={a.id} onClick={() => { setAppId(a.id); setActiveAppId(a.id); setAppOpen(false); }} style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, padding: "10px 11px", border: "none", background: "transparent", borderRadius: 10, cursor: "pointer", fontSize: 14.5, color: "#17151a", textAlign: "left", fontFamily: "inherit" }}>
+                        <span style={{ flex: "none", width: 28, height: 28, borderRadius: 8, background: getColor(a.id), color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700 }}>{getInitials(a.name)}</span>
                         {a.name}
                       </button>
                     ))}
@@ -239,7 +259,7 @@ export default function ReplyToReviews() {
                 {!keyFile ? (
                   <label style={{ display: "flex", alignItems: "center", gap: 14, padding: 18, border: "1.5px dashed #ddd9d3", borderRadius: 14, background: "#faf8f6", cursor: "pointer" }}>
                     <span style={{ flex: "none", width: 40, height: 40, borderRadius: 11, background: "#f0e6fc", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7a23cf" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7a23cf" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4" /><path d="M7 9l5-5 5 5" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /></svg>
                     </span>
                     <span>
                       <span style={{ display: "block", fontSize: 14.5, fontWeight: 600, color: "#17151a" }}>Upload service-account key</span>
@@ -250,7 +270,7 @@ export default function ReplyToReviews() {
                 ) : (
                   <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "15px 17px", border: "1.5px solid #cdeedd", borderRadius: 14, background: "#f3fbf6" }}>
                     <span style={{ flex: "none", width: 38, height: 38, borderRadius: 10, background: "#eafaf1", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#22a06b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#22a06b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7" /></svg>
                     </span>
                     <span style={{ flex: 1, minWidth: 0 }}>
                       <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: "#17151a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{keyFile}</span>

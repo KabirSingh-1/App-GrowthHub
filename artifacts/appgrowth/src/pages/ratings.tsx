@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/app-layout";
 import { useCreateOrder } from "@/lib/mock-api";
-import { getApps, StoredApp } from "@/lib/app-store";
+import { getApps, StoredApp, getActiveAppId, setActiveAppId } from "@/lib/app-store";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import { COUNTRIES, RATING_PRICE } from "@/constants";
@@ -26,7 +26,14 @@ export default function Ratings() {
   const [apps, setApps] = useState<StoredApp[]>([]);
 
   useEffect(() => {
-    setApps(getApps());
+    const loadedApps = getApps();
+    setApps(loadedApps);
+    const activeId = getActiveAppId();
+    if (activeId && loadedApps.some(a => a.id === activeId)) {
+      setAppId(activeId);
+      const activeApp = loadedApps.find(a => a.id === activeId);
+      if (activeApp) setPlatform(activeApp.platform === "iOS" ? "ios" : "android");
+    }
   }, []);
   const createOrder = useCreateOrder({
     mutation: {
@@ -86,13 +93,14 @@ export default function Ratings() {
                 value={appId || ""}
                 onValueChange={(value) => {
                   setAppId(value);
+                  setActiveAppId(value);
                   const selectedApp = apps.find(a => a.id === value);
                   if (selectedApp) {
                     setPlatform(selectedApp.platform === "iOS" ? "ios" : "android");
                   }
                 }}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full shadow-none">
                   <SelectValue placeholder="Select an app" />
                 </SelectTrigger>
                 <SelectContent>
@@ -118,7 +126,7 @@ export default function Ratings() {
                 type="number"
                 min="1"
                 placeholder="e.g., 50"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 shadow-none"
                 value={totalRating}
                 onChange={(e) => setTotalRating(e.target.value ? Number(e.target.value) : "")}
               />
@@ -131,7 +139,7 @@ export default function Ratings() {
                 value={country}
                 onValueChange={setCountry}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full shadow-none">
                   <SelectValue placeholder="Select a country" />
                 </SelectTrigger>
                 <SelectContent>
@@ -185,6 +193,9 @@ export default function Ratings() {
                       ({quantity} ratings × ${currentPrice})
                     </span>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-2 max-w-md">
+                    We will automatically space out your order over a few days and not post all at once.
+                  </p>
                 </div>
                 
                 <Button

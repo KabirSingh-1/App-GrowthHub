@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Plus, Star, Trash2, ExternalLink } from "lucide-react";
 import { getApps, removeApp, type StoredApp } from "@/lib/app-store";
+import { AddAppModal } from "@/components/add-app-modal";
 
 function AppStoreIcon({ size = 16 }: { size?: number }) {
   return (
@@ -41,11 +42,11 @@ export default function AppsList() {
             <h1 className="text-4xl font-black tracking-tight text-foreground">Your Apps</h1>
             <p className="text-lg text-muted-foreground mt-2 font-medium">Manage all your connected properties.</p>
           </div>
-          <Link href="/">
+          <AddAppModal onAppAdded={() => setApps(getApps())}>
             <Button className="rounded-xl font-bold shadow-sm hover-elevate">
               <Plus className="mr-2 h-5 w-5" /> Add App
             </Button>
-          </Link>
+          </AddAppModal>
         </div>
 
         {isLoading ? (
@@ -141,11 +142,11 @@ export default function AppsList() {
             <p className="text-muted-foreground font-medium mb-6">
               Search for an app on the home page and select it to add it here.
             </p>
-            <Link href="/">
+            <AddAppModal onAppAdded={() => setApps(getApps())}>
               <Button className="rounded-xl font-bold shadow-sm hover-elevate">
                 <Plus className="mr-2 h-5 w-5" /> Search & Add App
               </Button>
-            </Link>
+            </AddAppModal>
           </div>
         )}
       </div>

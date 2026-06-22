@@ -1,11 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import appStoreIcon from "@/assets/app-store.svg";
-import { getApps, StoredApp } from "@/lib/app-store";
+import { getApps, StoredApp, addApp, getActiveAppId, setActiveAppId } from "@/lib/app-store";
 import { AppLayout } from "@/components/layout/app-layout";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Upload, Info, Headphones, X, Copy, ChevronDown, Search, AlertCircle, PlusCircle, Plus, Loader2, BarChart2, Ticket } from "lucide-react";
+import { Settings, Upload, Info, Headphones, X, Copy, ChevronDown, Search, AlertCircle, PlusCircle, Plus, Loader2, BarChart2, Ticket, TrendingUp, RefreshCw, Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const TARGET_COUNTRIES = [
   { code: "US", name: "United States", flag: "🇺🇸" },
@@ -16,11 +17,23 @@ const TARGET_COUNTRIES = [
 ];
 
 export default function OrderAsoInstalls() {
-  const [hasApp, setHasApp] = useState(false);
   const [selectedApp, setSelectedApp] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isIpad, setIsIpad] = useState(false);
   const [platform, setPlatform] = useState<"ios" | "android">("ios");
+
+  // Load active app on mount
+  useEffect(() => {
+    const activeId = getActiveAppId();
+    if (activeId) {
+      const allApps = getApps();
+      const activeApp = allApps.find(a => a.id === activeId);
+      if (activeApp) {
+        setSelectedApp(activeApp);
+        setPlatform(activeApp.platform === "iOS" ? "ios" : "android");
+      }
+    }
+  }, []);
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
@@ -28,6 +41,7 @@ export default function OrderAsoInstalls() {
   const [activeSuggestion, setActiveSuggestion] = useState(-1);
   const [language, setLanguage] = useState("English");
   const [deliveryType, setDeliveryType] = useState("Spread Installs Within 24h");
+  const [focusedKeywordId, setFocusedKeywordId] = useState<string | null>(null);
 
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -93,6 +107,15 @@ export default function OrderAsoInstalls() {
 
   const updateKeyword = (dayId: string, kwId: string, field: "installs" | "keyword", value: string) => {
     setDays(days.map(d => d.id === dayId ? { ...d, keywords: d.keywords.map(kw => kw.id === kwId ? { ...kw, [field]: value } : kw) } : d));
+  };
+
+  const removeKeyword = (dayId: string, kwId: string) => {
+    setDays(days.map(d => {
+      if (d.id !== dayId) return d;
+      // Don't allow deleting the last keyword
+      if (d.keywords.length <= 1) return d;
+      return { ...d, keywords: d.keywords.filter(kw => kw.id !== kwId) };
+    }));
   };
 
   // Effect to load saved apps when dropdown opens
@@ -171,16 +194,31 @@ export default function OrderAsoInstalls() {
   }, [platform]);
 
   const handleSuggestionClick = (app: any) => {
-    setSelectedApp(app);
-    setPlatform(app.store === "Play Store" ? "android" : "ios");
-    setHasApp(true);
+    const appPlatform = app.store === "Play Store" ? "Android" : "iOS";
+    const storedApp: StoredApp = {
+      id: app.appId,
+      name: app.name,
+      developer: app.developer || "Unknown",
+      platform: appPlatform,
+      iconUrl: app.icon || null,
+      rating: app.rating || null,
+      bundleId: app.bundleId || app.appId,
+      storeUrl: app.storeUrl || "",
+      addedAt: new Date().toISOString(),
+    };
+    addApp(storedApp);
+    setActiveAppId(storedApp.id);
+
+    setSelectedApp(storedApp);
+    setPlatform(appPlatform === "iOS" ? "ios" : "android");
+    
     setIsModalOpen(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!suggestionsOpen) {
       if (e.key === "Enter") {
-        setHasApp(true);
+        
         setIsModalOpen(false);
       }
       return;
@@ -195,7 +233,7 @@ export default function OrderAsoInstalls() {
       if (activeSuggestion >= 0 && suggestions[activeSuggestion]) {
         handleSuggestionClick(suggestions[activeSuggestion]);
       } else {
-        setHasApp(true);
+        
         setIsModalOpen(false);
       }
     } else if (e.key === "Escape") {
@@ -218,61 +256,7 @@ export default function OrderAsoInstalls() {
     <AppLayout>
       <div className="min-h-screen bg-[#f4f6fa] p-8 font-sans">
 
-        {/* Top Header Box (Only visible when !hasApp as a helper) */}
-        {!hasApp ? (
-          <div className="mb-6 relative z-10">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-[4px] h-[18px] bg-[#635BFF] rounded-full"></div>
-              <h2 className="text-[17px] font-extrabold text-gray-900 tracking-tight">Select Your APP</h2>
-            </div>
-
-            <div className="bg-white rounded-[14px] shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-100 p-[10px] flex items-center">
-              {/* Platform Icons Container */}
-              <div className="flex items-center gap-1.5 bg-[#f5f6fa] p-1.5 rounded-[6px] border border-gray-100/50 shrink-0">
-                <button
-                  onClick={() => setPlatform("ios")}
-                  className={`w-[42px] h-[34px] rounded-[4px] flex items-center justify-center transition-colors ${platform === "ios" ? "bg-white border border-[#007AFF]/30 shadow-sm" : "hover:bg-gray-200/50"}`}
-                >
-                  <img src={appStoreIcon} alt="App Store" className="w-[20px] h-[20px]" />
-                </button>
-                <button
-                  onClick={() => setPlatform("android")}
-                  className={`w-[42px] h-[34px] rounded-[4px] flex items-center justify-center transition-colors ${platform === "android" ? "bg-white border border-[#007AFF]/30 shadow-sm" : "hover:bg-gray-200/50"}`}
-                >
-                  <svg className="w-[20px] h-[20px] ml-0.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 3V21L13.5 12L4 3Z" fill="#00E676" />
-                    <path d="M4 3L13.5 12L17.5 9.5L5.5 2L4 3Z" fill="#FF3B30" />
-                    <path d="M4 21L13.5 12L17.5 14.5L5.5 22L4 21Z" fill="#007AFF" />
-                    <path d="M13.5 12L17.5 9.5L20 11C20.8 11.5 20.8 12.5 20 13L17.5 14.5L13.5 12Z" fill="#FFC107" />
-                  </svg>
-                </button>
-              </div>
-
-              {platform === "ios" && (
-                <>
-                  <div className="w-[20px]"></div>
-
-                  {/* Device Pill Toggle */}
-                  <div className="flex items-center bg-[#f0f2f5] p-1 rounded-[6px] shrink-0 border border-gray-100">
-                    <button onClick={() => setIsIpad(false)} className={`px-[16px] py-[6px] rounded-[4px] text-[13px] font-bold transition-colors ${!isIpad ? "bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] text-gray-800" : "text-gray-500 hover:text-gray-700"}`}>
-                      iPhone
-                    </button>
-                    <button onClick={() => setIsIpad(true)} className={`px-[16px] py-[6px] rounded-[4px] text-[13px] font-semibold transition-colors ${isIpad ? "bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] text-gray-800" : "text-gray-500 hover:text-gray-700"}`}>
-                      iPad
-                    </button>
-                  </div>
-                </>
-              )}
-
-              <div className="w-px h-5 bg-gray-200 mx-5"></div>
-
-              <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-[6px] bg-[#635BFF] hover:bg-indigo-600 text-white px-5 py-[8px] rounded-[6px] text-[13px] font-semibold shadow-sm transition-colors shrink-0">
-                <PlusCircle className="w-[14px] h-[14px] opacity-90 stroke-[2]" /> Add New App
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="mb-6 relative z-10">
+                  <div className="mb-6 relative z-10">
             {/* Active state Select Your APP Box */}
             <div className="bg-white rounded-[12px] shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-100">
 
@@ -285,13 +269,13 @@ export default function OrderAsoInstalls() {
                 {/* Platform Icons Container (4 Icons) */}
                 <div className="flex items-center gap-1.5 bg-[#f4f5f8] p-1.5 rounded-[8px] shrink-0 border border-gray-100/50">
                   <button
-                    onClick={() => { setPlatform("ios"); setHasApp(false); setSelectedApp(null); }}
+                    onClick={() => { setPlatform("ios"); setSelectedApp(null); }}
                     className={`w-[36px] h-[30px] rounded-[6px] flex items-center justify-center transition-colors ${platform === "ios" ? "bg-white border border-gray-200 shadow-sm" : "hover:bg-gray-200/50"}`}
                   >
                     <img src={appStoreIcon} alt="App Store" className="w-[16px] h-[16px]" />
                   </button>
                   <button
-                    onClick={() => { setPlatform("android"); setHasApp(false); setSelectedApp(null); }}
+                    onClick={() => { setPlatform("android"); setSelectedApp(null); }}
                     className={`w-[36px] h-[30px] rounded-[6px] flex items-center justify-center transition-colors ${platform === "android" ? "bg-white border border-gray-200 shadow-sm" : "hover:bg-gray-200/50"}`}
                   >
                     <svg className="w-[16px] h-[16px] ml-0.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -309,11 +293,24 @@ export default function OrderAsoInstalls() {
                 <div className="relative" ref={appDropdownRef}>
                   <div
                     onClick={() => setIsAppDropdownOpen(!isAppDropdownOpen)}
-                    className="flex items-center gap-2 border border-[#635BFF] bg-white rounded-[4px] px-3 py-[6px] shadow-[0_0_0_1px_rgba(99,91,255,0.2)] cursor-pointer hover:bg-gray-50 transition-colors flex-1 min-w-[200px]"
+                    className={`flex items-center gap-2 rounded-[4px] py-[6px] cursor-pointer transition-all ${
+                      selectedApp 
+                        ? 'px-3 flex-1 min-w-[200px] border border-[#635BFF] bg-white shadow-[0_0_0_1px_rgba(99,91,255,0.2)] hover:bg-gray-50' 
+                        : 'px-5 w-[140px] border border-dashed border-[#635BFF]/50 bg-[#635BFF]/5 hover:bg-[#635BFF]/10 hover:border-[#635BFF] justify-center'
+                    }`}
                   >
-                    <img src={selectedApp?.iconUrl || selectedApp?.icon || "https://play-lh.googleusercontent.com/1-hL0Hflx96z8E50M-FItTWeoAxy7v2B2mXN9h8n6_GzWl-F3Qk04pPoyI-xZ3yYx_o=s128-rw"} alt="App Icon" className="w-5 h-5 rounded-[4px] shadow-sm" />
-                    <span className="text-[13px] font-semibold text-gray-800">{selectedApp?.name || "Koin"}</span>
-                    <ChevronDown className={`w-3.5 h-3.5 text-gray-400 ml-auto transition-transform ${isAppDropdownOpen ? "rotate-180" : ""}`} />
+                    {selectedApp ? (
+                      <>
+                        <img src={selectedApp.iconUrl || selectedApp.icon} alt="App Icon" className="w-5 h-5 rounded-[4px] shadow-sm" />
+                        <span className="text-[13px] font-semibold text-gray-800">{selectedApp.name}</span>
+                        <ChevronDown className={`w-3.5 h-3.5 text-gray-400 ml-auto transition-transform ${isAppDropdownOpen ? "rotate-180" : ""}`} />
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4 text-[#635BFF]" />
+                        <span className="text-[13px] font-bold text-[#635BFF]">Add App</span>
+                      </>
+                    )}
                   </div>
 
                   {/* Saved Apps Dropdown */}
@@ -338,6 +335,7 @@ export default function OrderAsoInstalls() {
                             onClick={() => {
                               setSelectedApp(app);
                               setPlatform(app.platform === "iOS" ? "ios" : "android");
+                              setActiveAppId(app.id);
                               setIsAppDropdownOpen(false);
                             }}
                             className="flex items-center gap-3 px-2 py-2 rounded-[6px] hover:bg-[#f8f9fc] cursor-pointer transition-colors"
@@ -381,9 +379,6 @@ export default function OrderAsoInstalls() {
                   )}
                 </div>
 
-                <button className="w-[26px] h-[26px] flex items-center justify-center rounded-full border border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400 transition-colors ml-3 shrink-0 bg-white shadow-sm">
-                  <Plus className="w-[14px] h-[14px]" />
-                </button>
 
                 <div className="w-px h-6 bg-gray-200 mx-5"></div>
 
@@ -417,83 +412,8 @@ export default function OrderAsoInstalls() {
 
             </div>
           </div>
-        )}
 
         {/* Huge Form Area / Content Area */}
-        {!hasApp ? (
-          /* Empty State Big Container */
-          <div className="bg-white rounded-[14px] shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-100 min-h-[600px] relative overflow-hidden flex flex-col items-center justify-center">
-
-            {/* Faded Background UI */}
-            <div className="absolute inset-0 p-8 pointer-events-none opacity-[0.2] select-none">
-              {/* 1 Select Your APP */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-5 h-5 rounded-[4px] bg-[#c5c1ff] text-white flex items-center justify-center text-[11px] font-black">1</div>
-                <h3 className="text-[16px] font-extrabold text-gray-500 tracking-tight">Select Your APP</h3>
-              </div>
-              <div className="flex gap-4 mb-10 ml-7">
-                <div className="w-[140px] h-[36px] bg-[#f0f2f5] rounded-md"></div>
-                <div className="w-[220px] h-[36px] bg-[#f0f2f5] rounded-md"></div>
-              </div>
-
-              {/* 2 Task Plan */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-5 h-5 rounded-[4px] bg-[#c5c1ff] text-white flex items-center justify-center text-[11px] font-black">2</div>
-                <h3 className="text-[16px] font-extrabold text-gray-500 tracking-tight">Task Plan</h3>
-              </div>
-              <div className="ml-7 space-y-4">
-                <div className="w-2/3 h-[20px] bg-[#f0f2f5] rounded-sm"></div>
-                <div className="flex gap-3">
-                  <div className="w-[80px] h-[32px] bg-[#f0f2f5] rounded-md"></div>
-                  <div className="w-[32px] h-[32px] rounded-full bg-[#f0f2f5]"></div>
-                </div>
-                <div className="flex gap-8 mt-6">
-                  <div className="space-y-3">
-                    <div className="w-[60px] h-[16px] bg-[#f0f2f5] rounded-sm"></div>
-                    <div className="w-[140px] h-[40px] bg-[#f0f2f5] rounded-md"></div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="w-[60px] h-[16px] bg-[#f0f2f5] rounded-sm"></div>
-                    <div className="w-[140px] h-[40px] bg-[#f0f2f5] rounded-md"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Empty State Content */}
-            <div className="relative z-10 flex flex-col items-center mt-12 bg-white/40 px-12 py-8 rounded-3xl backdrop-blur-sm">
-              {/* Illustration */}
-              <div className="mb-6 relative w-[240px] h-[160px] flex items-center justify-center">
-                <div className="absolute inset-0 bg-[#f4f3ff] rounded-full opacity-60 blur-2xl scale-75"></div>
-                <svg width="100%" height="100%" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Soft Blob */}
-                  <path d="M160 80C160 110 130 135 100 135C70 135 40 110 40 80C40 50 70 25 100 25C130 25 160 50 160 80Z" fill="#f5f4ff" />
-                  <circle cx="140" cy="40" r="3" fill="#d8d4ff" />
-                  <circle cx="50" cy="110" r="2" fill="#d8d4ff" />
-                  {/* Star in box */}
-                  <path d="M100 45L108 65H130L112 80L118 102L100 88L82 102L88 80L70 65H92L100 45Z" fill="#d9d5ff" />
-                  <path d="M100 52L105 65H118L108 75L112 88L100 80L88 88L92 75L82 65H95L100 52Z" fill="#ffffff" />
-                  {/* The Box */}
-                  <path d="M70 85L100 95L130 85V115L100 125L70 115V85Z" fill="#c3bcff" />
-                  <path d="M70 85L100 95L130 85L100 75L70 85Z" fill="#aba1ff" />
-                  <path d="M70 85L50 70L80 60L100 75L70 85Z" fill="#e2deff" opacity="0.9" />
-                  <path d="M130 85L150 70L120 60L100 75L130 85Z" fill="#e2deff" opacity="0.9" />
-                  {/* Sparkles */}
-                  <path d="M50 80L53 85L58 88L53 91L50 96L47 91L42 88L47 85L50 80Z" fill="#d9d5ff" />
-                  <path d="M150 50L152 53L155 55L152 57L150 60L148 57L145 55L148 53L150 50Z" fill="#ffca28" opacity="0.8" />
-                </svg>
-              </div>
-
-              <p className="text-[15px] text-gray-500 font-medium mb-5">
-                No applications currently. Please add new app first.
-              </p>
-
-              <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-[#635BFF] hover:bg-indigo-600 text-white px-[20px] py-[8px] rounded-[6px] text-[13px] font-semibold transition-colors shadow-sm">
-                <PlusCircle className="w-[14px] h-[14px]" /> Add New App
-              </button>
-            </div>
-          </div>
-        ) : (
           <div className="transition-all duration-300">
             {/* Section 2: Task Plan */}
             <div className="mb-6 relative z-0">
@@ -534,7 +454,7 @@ export default function OrderAsoInstalls() {
                     </div>
 
                     {days.find(d => d.id === activeDayId)?.keywords.map((kw, idx) => (
-                      <div key={kw.id} className="flex items-center gap-4 mb-4">
+                      <div key={kw.id} className="flex items-center gap-4 mb-4 relative" style={{ zIndex: 100 - idx }}>
                         <span className="text-[13px] font-semibold text-gray-700">Install</span>
                         <input
                           type="text"
@@ -554,14 +474,69 @@ export default function OrderAsoInstalls() {
                             type="text"
                             value={kw.keyword}
                             onChange={(e) => updateKeyword(activeDayId, kw.id, "keyword", e.target.value)}
+                            onFocus={() => setFocusedKeywordId(kw.id)}
+                            onBlur={() => setTimeout(() => setFocusedKeywordId(null), 200)}
                             placeholder="Input or select keyword"
                             className="w-full h-[36px] border border-gray-200 bg-white rounded-[6px] pl-3 pr-8 text-[13px] text-gray-800 font-medium outline-none focus:border-[#635BFF] shadow-sm placeholder:text-gray-400 placeholder:font-normal"
                           />
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+
+                          {focusedKeywordId === kw.id && kw.keyword && (
+                            <div className="absolute top-[calc(100%+4px)] left-0 w-full min-w-[280px] bg-white rounded-[8px] shadow-[0_10px_40px_rgba(0,0,0,0.12)] border border-gray-100 z-50 overflow-hidden text-left">
+                              {/* Triangle pointer */}
+                              <div className="absolute -top-[5px] left-[30px] w-2.5 h-2.5 bg-white border-t border-l border-gray-100 rotate-45 rounded-tl-[2px]"></div>
+                              
+                              <div className="p-3 relative z-10 bg-white">
+                                <div className="text-[12px] font-medium text-gray-400 mb-1">Recommended</div>
+                                <button
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    setFocusedKeywordId(null);
+                                    addKeyword(activeDayId);
+                                  }}
+                                  className="w-full text-left text-[14px] text-[#635BFF] hover:bg-[#f8f9fc] p-2 -mx-2 rounded-[6px] transition-colors"
+                                >
+                                  + Add "{kw.keyword}" as my keyword
+                                </button>
+                              </div>
+                              <div className="border-t border-gray-100 p-2.5 flex items-center justify-between bg-[#fafbfe] relative z-10">
+                                <button 
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    setFocusedKeywordId(null);
+                                    addKeyword(activeDayId);
+                                  }}
+                                  className="flex items-center justify-center gap-1.5 h-[34px] px-4 border border-[#635BFF]/40 text-[#635BFF] rounded-[6px] text-[13px] font-semibold hover:bg-[#635BFF]/5 transition-colors"
+                                >
+                                  <PlusCircle className="w-[14px] h-[14px]" /> Add More
+                                </button>
+                                <button 
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    setFocusedKeywordId(null);
+                                    addKeyword(activeDayId);
+                                  }}
+                                  className="flex items-center justify-center h-[34px] px-6 bg-[#635BFF] text-white rounded-[6px] text-[13px] font-semibold hover:bg-indigo-600 transition-colors shadow-sm"
+                                >
+                                  Add(1)
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
 
+                        <span className="text-[13px] font-bold text-[#3a3741] w-5 text-center shrink-0 ml-2">{18 - (idx * 2)}</span>
+                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#9a97a0] hover:text-[#3a3741] transition-colors shrink-0">
+                          <TrendingUp className="w-[16px] h-[16px]" />
+                        </button>
+                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#9a97a0] hover:text-[#3a3741] transition-colors shrink-0">
+                          <RefreshCw className="w-[14px] h-[14px]" />
+                        </button>
+                        <button onClick={() => removeKeyword(activeDayId, kw.id)} className="w-[24px] h-[24px] flex items-center justify-center text-[#9a97a0] hover:text-red-500 transition-colors shrink-0">
+                          <Trash2 className="w-[15px] h-[15px]" />
+                        </button>
                         {idx === 0 && (
-                          <button onClick={() => addKeyword(activeDayId)} className="w-[24px] h-[24px] flex items-center justify-center rounded-full border border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400 transition-colors shadow-sm bg-white shrink-0">
+                          <button onClick={() => addKeyword(activeDayId)} className="w-[20px] h-[20px] flex items-center justify-center rounded-full border-[1.5px] border-[#9a97a0] text-[#9a97a0] hover:text-[#3a3741] hover:border-[#3a3741] transition-colors bg-transparent shrink-0 ml-1">
                             <Plus className="w-[12px] h-[12px]" />
                           </button>
                         )}
@@ -654,20 +629,13 @@ export default function OrderAsoInstalls() {
               </div>
             </div>
           </div>
-        )}
       </div>
 
       {/* Add New App Modal Overlay */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity"
-            onClick={() => setIsModalOpen(false)}
-          ></div>
-
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[800px] p-0 overflow-visible gap-0 rounded-[20px] bg-transparent border-none shadow-none [&>button]:hidden">
           {/* Modal Content */}
-          <div className="bg-white rounded-[20px] shadow-2xl w-full max-w-[800px] relative z-10 overflow-visible flex flex-col font-sans border border-gray-100">
+          <div className="bg-white rounded-[20px] shadow-2xl w-full relative z-10 overflow-visible flex flex-col font-sans border border-gray-100">
 
             {/* Header */}
             <div className="flex items-center justify-between px-[24px] py-[20px] border-b border-gray-100 bg-[#fafbfe] rounded-t-[20px]">
@@ -834,8 +802,8 @@ export default function OrderAsoInstalls() {
             </div>
 
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

@@ -59,3 +59,23 @@ export function getApps(): StoredApp[] {
 export function hasApp(id: string): boolean {
   return readFromStorage().some((a) => a.id === id);
 }
+
+const ACTIVE_APP_KEY = "appversal_active_app";
+
+export function getActiveAppId(): string | null {
+  try {
+    return localStorage.getItem(ACTIVE_APP_KEY) || null;
+  } catch {
+    return null;
+  }
+}
+
+export function setActiveAppId(id: string | null): void {
+  try {
+    if (id) {
+      localStorage.setItem(ACTIVE_APP_KEY, id);
+    } else {
+      localStorage.removeItem(ACTIVE_APP_KEY);
+    }
+  } catch {}
+}
